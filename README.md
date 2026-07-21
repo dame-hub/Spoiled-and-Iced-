@@ -25,8 +25,34 @@ embedded inline). Open it, host it, or drop it into Shopify.
   A **Reserved** counter in the header opens their list of pre-orders.
 - **Most-wanted ranks** (#1, #2, #3) update live as votes come in; sort by *Most wanted* to see the leaderboard.
 - **"My votes"** view so a visitor can see everything they picked.
-- **Live hero stats**: pieces on the ballot, total votes cast, drops unlocked.
-- Fully responsive, Liquid Chrome Street-Luxe design, respects reduced-motion preferences.
+- **Live hero stats** + a **trust bar** (rating · pieces sold · positive reviews).
+- **The Deluxe Vendors List** — a dedicated section selling one high-value digital product ($197), with its own checkout flow.
+- **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
+- Product photos are **evened out onto uniform dark tiles** (light/grey backgrounds removed) for a consistent, professional grid.
+- 54 real products, including 35 individual Hello Kitty Barbie ring variants.
+- Fully responsive, dark girly liquid-chrome design, respects reduced-motion preferences.
+
+## Capture votes, pre-orders &amp; sales (2-minute setup)
+
+Every vote, pre-order and Vendors List purchase is sent to a backend you own, so you can see
+what people want. The easiest destination is a **Google Sheet** — no server required:
+
+1. Create a Google Sheet → **Extensions ▸ Apps Script**.
+2. Paste all of [`api/capture.gs`](api/capture.gs). **Deploy ▸ New deployment ▸ Web app**,
+   *Execute as: Me*, *Who has access: Anyone*. Copy the `/exec` URL.
+3. In `index.html`, set `CONFIG.captureUrl = "your /exec URL";`
+
+Now each action appends a row (time, type, piece, category, price, voted, count, qty, email).
+Make a Pivot Table on the "Piece" column to rank the most-voted pieces. Prefer your own
+server or Supabase/Firebase? Point `captureUrl` at any endpoint that accepts a JSON `POST`.
+
+## The Deluxe Vendors List (digital product)
+
+The `#vendors` section sells a single premium download. To take real payments, set
+`CONFIG.vendorsCheckoutUrl` to a **Stripe / Shopify / Gumroad payment link** — the "Get
+instant access" button then sends buyers straight there. Left blank, it opens a checkout
+modal that captures the buyer's email (logged via `captureUrl`) and promises the payment
+link + download by email. Edit the price/copy in the `.vendors` section of `index.html`.
 
 ## Your logo &amp; the intro
 
