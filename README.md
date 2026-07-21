@@ -49,6 +49,64 @@ deep-link straight to that item.
 ### Categories
 Add or rename categories in the `CATS` object (label, chip emoji, and the two-color tile gradient).
 
+## Connect the AliExpress API (automatic products + photos)
+
+Instead of hand-entering pieces, the site can pull **real products, prices, and photos**
+straight from AliExpress via their official Affiliate API. Because every API request must be
+signed with your secret key (which can't live in a webpage), this runs through a tiny
+backend — `api/products.js` — that you deploy once. The storefront then loads live products
+on page load, and falls back to the demo catalog whenever the backend isn't reachable.
+
+### 1. Get API access
+- Sign up on the **AliExpress Open Platform / Affiliate portal** (`portals.aliexpress.com`
+  for affiliates, or `openservice.aliexpress.com` for the open platform) and create an app.
+- After approval you'll have an **App Key**, an **App Secret**, and a **Tracking ID**.
+
+### 2. Choose your pieces
+Open `products.config.json` and list the **numeric product IDs** you want on the ballot —
+the number in a product URL, e.g. `.../item/`**`1005006123456789`**`.html`. From your two
+vendor links, open each piece and grab that number. Use `overrides` to set each item's
+category and drop goal (category matters most for the bags — the code can't tell Hello Kitty
+from Bape on its own):
+```json
+{
+  "productIds": ["1005006123456789", "1005006987654321"],
+  "defaultGoal": 100,
+  "overrides": {
+    "1005006123456789": { "cat": "hellokitty", "goal": 120, "badge": "hot" },
+    "1005006987654321": { "cat": "bape" }
+  }
+}
+```
+
+### 3. Deploy the backend
+Push this repo to **Vercel** (easiest — it auto-detects the `api/` folder), or Netlify /
+Cloudflare (Node 18+). Set these environment variables in the host's dashboard:
+
+| Variable | Value |
+|---|---|
+| `ALIEXPRESS_APP_KEY` | your App Key |
+| `ALIEXPRESS_APP_SECRET` | your App Secret |
+| `ALIEXPRESS_TRACKING_ID` | your Tracking ID |
+| `ALIEXPRESS_SIGN_METHOD` | `sha256` (default) — flip to `md5` only if you get a sign error |
+| `ALIEXPRESS_PRODUCT_IDS` | *(optional)* comma-separated IDs, overrides the config file |
+
+Visit `https://your-app.vercel.app/api/products` — you should see JSON of your products.
+Add `?debug=1` to see the raw AliExpress response, which is handy if signing needs a tweak.
+
+### 4. Point the storefront at it
+In `index.html`, the `CONFIG.apiUrl` near the top of the script decides where products come
+from:
+- Same domain as the backend → leave it as `"/api/products"`.
+- Storefront on **Shopify**, backend on Vercel → set it to the full URL,
+  `"https://your-app.vercel.app/api/products"` (CORS is already enabled in the backend).
+- Set it to `""` to force the built-in demo catalog.
+
+> **Heads up on signing:** AliExpress provisions apps against two API gateways with slightly
+> different signature rules. The backend defaults to the newer HMAC-SHA256 method; if the API
+> returns a sign/auth error, switch `ALIEXPRESS_SIGN_METHOD` to `md5`. Once you have real
+> credentials we can confirm the right setting together against the live `?debug=1` output.
+
 ## Votes: device vs. shared
 
 By default votes are saved in the browser's `localStorage` — **per device**. Great for a

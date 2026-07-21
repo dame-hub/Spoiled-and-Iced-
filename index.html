@@ -691,6 +691,17 @@
   "use strict";
 
   /* ============================================================
+     LIVE FEED
+     When the AliExpress backend (api/products.js) is deployed, the
+     store pulls real products + photos from it on load. Point apiUrl
+     at your deployed function. Leave it as "/api/products" if the
+     function is hosted on the same domain; use the full URL (e.g.
+     "https://your-app.vercel.app/api/products") when the storefront
+     lives on Shopify. Set to "" to force the built-in demo catalog.
+     ============================================================ */
+  var CONFIG = { apiUrl: "/api/products" };
+
+  /* ============================================================
      VENDOR SOURCES
      The two partner storefronts you provided. Assign each product
      a `source` link — paste the exact product URL per item to make
@@ -1126,10 +1137,33 @@
     state.sort = "trending"; sortEl.value = "trending"; state.onlyMine = false; syncChips(); render();
   });
 
+  /* ---------- live feed hydration ---------- */
+  function applyProducts(list) {
+    if (!list || !list.length) return;
+    PRODUCTS = list;
+    render();
+    // refresh hero stats to the real numbers (no re-animation)
+    setNum(document.getElementById("statPieces"), PRODUCTS.length);
+    updateStats();
+  }
+
+  function hydrateFromApi() {
+    if (!CONFIG.apiUrl || typeof fetch !== "function") return;
+    fetch(CONFIG.apiUrl, { headers: { "accept": "application/json" } })
+      .then(function (r) { return r && r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && Array.isArray(data.products) && data.products.length) {
+          applyProducts(data.products);
+        }
+      })
+      .catch(function () { /* offline or no backend yet — keep demo catalog */ });
+  }
+
   /* ---------- go ---------- */
   buildChips();
   render();
   initStatsAnimation();
+  hydrateFromApi();
 })();
 </script>
 </body>

@@ -1,0 +1,15 @@
+{
+  "_comment": "The pieces on the voting ballot. Put the numeric AliExpress product IDs here (the number in a product URL, e.g. .../item/1005006123456789.html). Use 'overrides' to set the category and drop goal per item — category matters most for the two bag types, which can't be told apart automatically.",
+
+  "productIds": [
+    "1005006000000001",
+    "1005006000000002"
+  ],
+
+  "defaultGoal": 100,
+
+  "overrides": {
+    "1005006000000001": { "cat": "hellokitty", "goal": 120, "badge": "hot" },
+    "1005006000000002": { "cat": "bape", "goal": 100 }
+  }
+}
