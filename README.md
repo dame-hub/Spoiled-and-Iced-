@@ -1,9 +1,13 @@
 # Spoiled &amp; Iced — Voting Marketplace ✦
 
-A storefront-style **voting marketplace**. Visitors scroll a full catalog of pieces
-(rings, necklaces, bracelets, earrings, Hello Kitty bags, Bape bags) and **vote** on
-what they want stocked. The most-wanted pieces hit their vote goal, "unlock the drop,"
-and are the ones you add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
+A storefront-style **voting marketplace**. Visitors scroll a full catalog of 18k & 14k
+gold-plated jewelry (rings, earrings, necklaces, bracelets) and **vote** on what they want
+stocked. The most-wanted pieces hit their vote goal, "unlock the drop," and are the ones you
+add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
+
+The catalog ships with **20 real products** — names, prices, ratings, "sold" counts and photos
+extracted from the Alex Handwork Store jewelry catalog. Styled in a dark, girly liquid-chrome
+look with pink/rose/lilac tones.
 
 It's a single, self-contained `index.html` — no build step, no dependencies (the logo is
 embedded inline). Open it, host it, or drop it into Shopify.
@@ -13,7 +17,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Intro splash** on first open: the logo's pieces (letters *and* charms) fall from the top,
   sparkle, and assemble into the full logo. Plays once per session; tap to skip; skipped
   entirely for visitors who prefer reduced motion.
-- **Storefront catalog** with category filters (All, Rings, Necklaces, Bracelets, Earrings, Hello Kitty, Bape) plus search and sort.
+- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets) plus search and sort. Cards show real photos, prices (with original-price strikethrough), star rating and "sold" counts.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
