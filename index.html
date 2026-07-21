@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spoiled &amp; Iced — Vote the Drop</title>
+  <meta name="description" content="You pick what we stock. Vote your favorite rings, necklaces, bracelets and bags — the most-wanted pieces get iced and dropped in the Spoiled & Iced store." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+<style>
+  /* ============================================================
+     SPOILED & ICED — voting marketplace
+     Aesthetic: Y2K kawaii-luxe / iced-out. Bubblegum + ice + chrome.
+     Self-contained: no external assets except web fonts (graceful
+     fallback if blocked). Product "photos" are gradient + emoji tiles
+     you can swap for real images via the `image` field in PRODUCTS.
+     ============================================================ */
+
+  :root {
+    --pink:      #ff4d9d;
+    --pink-soft: #ffa7d1;
+    --pink-tint: #ffe7f2;
+    --ice:       #3fbcff;
+    --ice-soft:  #b6ecff;
+    --ice-tint:  #e7f7ff;
+    --lilac:     #c39bff;
+    --mint:      #7beecb;
+    --lime:      #b8f56a;
+
+    --ink:       #2c1740;
+    --ink-soft:  #6d5a83;
+    --pearl:     #fff6fb;
+    --card:      rgba(255,255,255,0.72);
+    --line:      rgba(94, 48, 120, 0.12);
+
+    --chrome-1:  #ffffff;
+    --chrome-2:  #cdd9ea;
+    --chrome-3:  #8fa4c2;
+
+    --shadow-soft: 0 20px 45px -24px rgba(120, 40, 110, 0.45);
+    --shadow-pink: 0 16px 34px -16px rgba(255, 77, 157, 0.55);
+    --radius:    22px;
+    --radius-sm: 14px;
+
+    --font-display: "Fraunces", "Hoefler Text", Georgia, serif;
+    --font-round:   "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    --font-body:    "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--pearl);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* atmospheric background: soft candy blobs + grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(60vw 55vw at 8% -8%, rgba(255,167,209,0.55), transparent 60%),
+      radial-gradient(55vw 55vw at 100% 0%, rgba(182,236,255,0.55), transparent 62%),
+      radial-gradient(50vw 50vw at 50% 120%, rgba(195,155,255,0.35), transparent 60%),
+      linear-gradient(180deg, #fff6fb 0%, #f3f9ff 55%, #fff4fa 100%);
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+  }
+
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  .wrap { width: min(1180px, 92vw); margin-inline: auto; }
+
+  /* ---------- announcement marquee ---------- */
+  .ticker {
+    background: linear-gradient(90deg, var(--pink), var(--lilac), var(--ice));
+    color: #fff;
+    font-family: var(--font-round);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 8px 0;
+    position: relative;
+  }
+  .ticker__track {
+    display: inline-block;
+    animation: marquee 26s linear infinite;
+  }
+  .ticker__track span { padding: 0 1.4rem; opacity: 0.95; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ---------- header ---------- */
+  header.nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    background: rgba(255, 248, 252, 0.72);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 14px 0;
+  }
+  .logo {
+    font-family: var(--font-round);
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .logo .sp { color: var(--pink); }
+  .logo .amp { color: var(--ink-soft); font-family: var(--font-display); font-style: italic; font-size: 1.1rem; }
+  .logo .iced {
+    background: linear-gradient(180deg, #f6fbff 0%, #a9c4e6 45%, #6f8fc0 55%, #d6e6fb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .logo .star { font-size: 0.9rem; }
+
+  .nav__links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav__links a {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    transition: color 0.2s;
+  }
+  .nav__links a:hover { color: var(--pink); }
+
+  .votes-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: linear-gradient(135deg, var(--pink), var(--pink-soft));
+    color: #fff;
+    border: none;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 9px 15px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: var(--shadow-pink);
+    transition: transform 0.15s ease, box-shadow 0.2s;
+  }
+  .votes-pill:hover { transform: translateY(-2px); }
+  .votes-pill:active { transform: translateY(0) scale(0.97); }
+  .votes-pill .n {
+    background: rgba(255,255,255,0.28);
+    border-radius: 999px;
+    padding: 1px 9px;
+    min-width: 22px;
+    text-align: center;
+  }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 70px 0 40px; }
+  .hero__grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-round);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    color: var(--pink);
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 7px 14px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-soft);
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.9rem, 6.4vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 22px 0 0;
+  }
+  .hero h1 .ink-glaze {
+    background: linear-gradient(180deg, #eaf4ff, #7ea7de 60%, #b9d4f5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero h1 em { font-style: italic; color: var(--pink); }
+  .hero p.lede {
+    font-size: 1.12rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 34ch;
+    margin: 20px 0 30px;
+  }
+  .hero__cta { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.98rem;
+    border-radius: 999px;
+    padding: 14px 26px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.2s, background 0.2s;
+  }
+  .btn--primary { background: linear-gradient(135deg, var(--pink), #ff77b6); color: #fff; box-shadow: var(--shadow-pink); }
+  .btn--primary:hover { transform: translateY(-2px); }
+  .btn--ghost { background: #fff; color: var(--ink); border-color: var(--line); box-shadow: var(--shadow-soft); }
+  .btn--ghost:hover { transform: translateY(-2px); color: var(--pink); }
+
+  .hero__stats { display: flex; gap: 2rem; margin-top: 40px; flex-wrap: wrap; }
+  .stat .num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .stat .lbl { font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+  /* hero collage */
+  .collage { position: relative; height: 420px; }
+  .collage .tile {
+    position: absolute;
+    border-radius: 26px;
+    display: grid;
+    place-items: center;
+    font-size: 3.2rem;
+    box-shadow: var(--shadow-soft);
+    border: 3px solid rgba(255,255,255,0.85);
+    animation: float 6s ease-in-out infinite;
+  }
+  .collage .t1 { width: 190px; height: 230px; left: 4%; top: 8%; background: linear-gradient(160deg, var(--pink-soft), var(--pink)); transform: rotate(-7deg); }
+  .collage .t2 { width: 160px; height: 160px; right: 6%; top: 0; background: linear-gradient(160deg, var(--ice-soft), var(--ice)); transform: rotate(6deg); animation-delay: -2s; }
+  .collage .t3 { width: 150px; height: 180px; right: 2%; bottom: 4%; background: linear-gradient(160deg, #e9dcff, var(--lilac)); transform: rotate(-4deg); animation-delay: -1s; }
+  .collage .t4 { width: 140px; height: 140px; left: 20%; bottom: 0; background: linear-gradient(160deg, var(--lime), var(--mint)); transform: rotate(8deg); animation-delay: -3.5s; }
+  @keyframes float { 0%,100% { translate: 0 0; } 50% { translate: 0 -14px; } }
+
+  .collage .spark {
+    position: absolute; font-size: 1.4rem; animation: twinkle 2.6s ease-in-out infinite;
+  }
+  .collage .spark.s1 { left: 46%; top: 12%; }
+  .collage .spark.s2 { right: 30%; bottom: 22%; animation-delay: -1.3s; font-size: 1.8rem; }
+  .collage .spark.s3 { left: 6%; bottom: 30%; animation-delay: -0.7s; }
+  @keyframes twinkle { 0%,100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); } 50% { opacity: 1; transform: scale(1.2) rotate(20deg); } }
+
+  /* ---------- how it works ---------- */
+  .how { padding: 30px 0 10px; }
+  .section-head { text-align: center; margin-bottom: 34px; }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 8px 0 6px;
+    letter-spacing: -0.015em;
+  }
+  .section-head p { color: var(--ink-soft); margin: 0; font-size: 1.02rem; }
+  .kicker { font-family: var(--font-round); font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.76rem; color: var(--pink); }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px 24px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+  }
+  .step__no {
+    font-family: var(--font-display);
+    font-size: 3.4rem;
+    font-weight: 600;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--pink), var(--lilac));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    opacity: 0.85;
+  }
+  .step h3 { font-family: var(--font-round); font-weight: 700; font-size: 1.2rem; margin: 12px 0 6px; }
+  .step p { color: var(--ink-soft); font-size: 0.96rem; line-height: 1.5; margin: 0; }
+  .step .emoji { position: absolute; right: 16px; top: 16px; font-size: 1.7rem; }
+
+  /* ---------- catalog ---------- */
+  .catalog { padding: 56px 0 30px; }
+
+  .controls {
+    position: sticky;
+    top: 66px;
+    z-index: 40;
+    background: rgba(255, 248, 252, 0.82);
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 28px;
+  }
+  .controls__row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+  .chip {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink-soft);
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--pink-soft); color: var(--pink); }
+  .chip.active { background: linear-gradient(135deg, var(--pink), #ff86bc); color: #fff; border-color: transparent; box-shadow: var(--shadow-pink); }
+
+  .controls__tools { display: flex; gap: 10px; align-items: center; }
+  .search {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 14px;
+  }
+  .search input { border: none; outline: none; background: transparent; font-family: var(--font-body); font-size: 0.9rem; width: 130px; color: var(--ink); }
+  .search input::placeholder { color: var(--ink-soft); }
+  .sort {
+    border: 1px solid var(--line);
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236d5a83' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;
+    border-radius: 999px;
+    padding: 9px 32px 9px 14px;
+    font-family: var(--font-body); font-weight: 600; font-size: 0.85rem;
+    color: var(--ink); cursor: pointer; appearance: none; -webkit-appearance: none;
+  }
+
+  .count-line { font-size: 0.86rem; color: var(--ink-soft); margin: -8px 4px 20px; font-weight: 600; }
+  .count-line b { color: var(--pink); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: transform 0.55s cubic-bezier(.2,.7,.2,1), box-shadow 0.25s, opacity 0.55s;
+  }
+  .card.in { opacity: 1; transform: translateY(0); }
+  .card:hover { box-shadow: 0 26px 50px -22px rgba(120,40,110,0.5); transform: translateY(-4px); }
+  .card.unlocked { border-color: var(--pink-soft); }
+
+  .card__media {
+    position: relative;
+    aspect-ratio: 4 / 3.4;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .card__media .glyph { font-size: 4.4rem; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.14)); transition: transform 0.4s ease; }
+  .card:hover .card__media .glyph { transform: scale(1.08) rotate(-4deg); }
+  .card__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .card__media .sheen {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.5), transparent 42%);
+    pointer-events: none;
+  }
+  .card__media .dots {
+    position: absolute; inset: 0; opacity: 0.35; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1.4px);
+    background-size: 14px 14px;
+  }
+
+  .tag {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(255,255,255,0.85);
+    color: var(--ink);
+    font-family: var(--font-round); font-weight: 700;
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 5px 10px; border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+  .badge {
+    position: absolute; top: 12px; right: 12px;
+    font-family: var(--font-round); font-weight: 700;
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 5px 10px; border-radius: 999px; color: #fff;
+  }
+  .badge.hot { background: linear-gradient(135deg, #ff5a5a, var(--pink)); }
+  .badge.new { background: linear-gradient(135deg, var(--ice), #6aa9ff); }
+  .rank {
+    position: absolute; bottom: 12px; left: 12px;
+    background: linear-gradient(135deg, #ffd76a, #ffb020);
+    color: #6a4a00;
+    font-family: var(--font-round); font-weight: 800;
+    font-size: 0.72rem; padding: 5px 10px; border-radius: 999px;
+    box-shadow: 0 6px 14px -6px rgba(255,160,0,0.7);
+  }
+
+  .card__body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .card__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card__name { font-family: var(--font-round); font-weight: 700; font-size: 1.05rem; line-height: 1.2; margin: 0; }
+  .card__price { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--ink); white-space: nowrap; }
+  .card__src { font-size: 0.78rem; color: var(--ink-soft); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+  .card__src:hover { color: var(--pink); }
+
+  /* progress to drop */
+  .progress { margin-top: auto; }
+  .progress__meta { display: flex; justify-content: space-between; font-size: 0.76rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  .progress__meta .goal { color: var(--pink); }
+  .bar { height: 8px; border-radius: 999px; background: var(--ice-tint); overflow: hidden; }
+  .bar__fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--pink), var(--lilac)); width: 0; transition: width 0.7s cubic-bezier(.2,.7,.2,1); }
+  .card.unlocked .bar__fill { background: linear-gradient(90deg, #ffd76a, var(--pink)); }
+
+  .vote-row { display: flex; gap: 10px; align-items: center; }
+  .vote-btn {
+    flex: 1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    font-family: var(--font-round); font-weight: 700; font-size: 0.95rem;
+    padding: 12px 14px; border-radius: 14px;
+    border: 1px solid var(--pink-soft);
+    background: #fff; color: var(--pink);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.2s, color 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .vote-btn:hover { background: var(--pink-tint); }
+  .vote-btn:active { transform: scale(0.96); }
+  .vote-btn.voted { background: linear-gradient(135deg, var(--pink), #ff86bc); color: #fff; border-color: transparent; box-shadow: var(--shadow-pink); }
+  .vote-btn .heart { font-size: 1.05rem; transition: transform 0.2s; }
+  .vote-btn.voted .heart { animation: pop 0.4s ease; }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
+  .vote-count {
+    min-width: 62px; text-align: center;
+    font-family: var(--font-display); font-weight: 600; font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .vote-count small { display: block; font-family: var(--font-body); font-weight: 600; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+  .vote-count.bump { animation: countpop 0.4s ease; }
+  @keyframes countpop { 40% { transform: scale(1.35); color: var(--pink); } }
+
+  .empty { text-align: center; padding: 60px 0; color: var(--ink-soft); }
+  .empty .big { font-size: 3rem; }
+
+  /* floating heart burst */
+  .fly-heart { position: fixed; z-index: 999; pointer-events: none; font-size: 1.4rem; animation: fly 1s ease-out forwards; }
+  @keyframes fly { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), -90px) scale(1.5); } }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(120%);
+    background: var(--ink); color: #fff;
+    font-family: var(--font-round); font-weight: 700; font-size: 0.92rem;
+    padding: 12px 20px; border-radius: 999px;
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.5);
+    z-index: 1000; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* confetti */
+  .confetti { position: fixed; top: -10px; z-index: 998; pointer-events: none; border-radius: 2px; }
+
+  /* ---------- footer ---------- */
+  footer.foot {
+    margin-top: 70px;
+    padding: 50px 0 34px;
+    background: linear-gradient(180deg, transparent, rgba(255,167,209,0.18));
+    border-top: 1px solid var(--line);
+  }
+  .foot__grid { display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap; align-items: flex-start; }
+  .foot p { color: var(--ink-soft); font-size: 0.92rem; max-width: 40ch; line-height: 1.6; }
+  .foot a.shop { color: var(--pink); font-weight: 700; text-decoration: none; }
+  .foot__note { margin-top: 26px; font-size: 0.8rem; color: var(--ink-soft); opacity: 0.85; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 860px) {
+    .hero__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .collage { height: 300px; order: -1; }
+    .steps { grid-template-columns: 1fr; }
+    .nav__links { display: none; }
+    .controls { top: 60px; }
+  }
+  @media (max-width: 520px) {
+    .hero { padding: 40px 0 20px; }
+    .hero__stats { gap: 1.3rem; }
+    .collage { height: 250px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto; }
+    .card { opacity: 1; transform: none; }
+  }
+</style>
+
+<!-- ===== announcement ticker ===== -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track" id="ticker"></div>
+</div>
+
+<!-- ===== header ===== -->
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a href="#top" class="logo" aria-label="Spoiled and Iced home">
+      <span class="star">✦</span><span class="sp">Spoiled</span><span class="amp">&amp;</span><span class="iced">Iced</span>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#catalog">Shop the vote</a>
+      <a href="#how">How it works</a>
+      <a href="#catalog" id="link-most">Most wanted</a>
+    </nav>
+    <button class="votes-pill" id="myVotesBtn" aria-label="View pieces you voted for">
+      <span aria-hidden="true">🩷</span> My votes <span class="n" id="myVotesCount">0</span>
+    </button>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ===== hero ===== -->
+<section class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <span class="eyebrow">✦ The voting marketplace</span>
+      <h1>Vote the drop.<br><em>We'll</em> <span class="ink-glaze">ice it.</span></h1>
+      <p class="lede">You decide what lands in the store. Scroll the catalog, vote your favorite pieces, and the most-wanted drops get made — no guessing, just your taste.</p>
+      <div class="hero__cta">
+        <a href="#catalog" class="btn btn--primary">Start voting <span aria-hidden="true">↓</span></a>
+        <a href="#how" class="btn btn--ghost">How it works</a>
+      </div>
+      <div class="hero__stats">
+        <div class="stat"><div class="num" data-count id="statPieces">0</div><div class="lbl">Pieces up for vote</div></div>
+        <div class="stat"><div class="num" data-count id="statVotes">0</div><div class="lbl">Votes cast</div></div>
+        <div class="stat"><div class="num" data-count id="statDrops">0</div><div class="lbl">Drops unlocked</div></div>
+      </div>
+    </div>
+    <div class="collage" aria-hidden="true">
+      <div class="tile t1">💍</div>
+      <div class="tile t2">🎀</div>
+      <div class="tile t3">💎</div>
+      <div class="tile t4">🦈</div>
+      <span class="spark s1">✦</span>
+      <span class="spark s2">✧</span>
+      <span class="spark s3">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== how it works ===== -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>Three taps to your dream drop</h2>
+      <p>Your votes are the buy plan. Here's the whole ritual.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="emoji">🛍️</span>
+        <div class="step__no">01</div>
+        <h3>Browse the catalog</h3>
+        <p>Scroll a full storefront of rings, necklaces, bracelets, and Hello Kitty &amp; Bape bags — freshly sourced and waiting.</p>
+      </div>
+      <div class="step">
+        <span class="emoji">🩷</span>
+        <div class="step__no">02</div>
+        <h3>Vote your faves</h3>
+        <p>Tap the heart on anything you'd actually buy. Watch each piece climb toward its drop goal in real time.</p>
+      </div>
+      <div class="step">
+        <span class="emoji">✨</span>
+        <div class="step__no">03</div>
+        <h3>We ice &amp; drop it</h3>
+        <p>Hit the vote goal and the piece unlocks — it gets stocked in the Spoiled &amp; Iced store for everyone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== catalog ===== -->
+<section class="catalog" id="catalog">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">The ballot</span>
+      <h2>Shop the vote</h2>
+      <p>Every heart counts. Sort by <b>most wanted</b> to see what's winning.</p>
+    </div>
+
+    <div class="controls">
+      <div class="controls__row">
+        <div class="chips" id="chips"></div>
+        <div class="controls__tools">
+          <label class="search">
+            <span aria-hidden="true">🔍</span>
+            <input type="search" id="search" placeholder="Search pieces…" aria-label="Search pieces" />
+          </label>
+          <select class="sort" id="sort" aria-label="Sort pieces">
+            <option value="trending">Most wanted 🔥</option>
+            <option value="new">Newest ✨</option>
+            <option value="low">Price: low to high</option>
+            <option value="high">Price: high to low</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <p class="count-line" id="countLine"></p>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden><div class="big">🫧</div><p>No pieces match that yet — try another category.</p></div>
+  </div>
+</section>
+
+<!-- ===== footer ===== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a href="#top" class="logo" style="font-size:1.7rem">
+          <span class="star">✦</span><span class="sp">Spoiled</span><span class="amp">&amp;</span><span class="iced">Iced</span>
+        </a>
+        <p>Powered entirely by your votes. The pieces you love most get iced and dropped in the store — you're the buyer now.</p>
+        <p><a class="shop" href="https://spoiled-iced-store.myshopify.com/" target="_blank" rel="noopener">Visit the store ↗</a></p>
+      </div>
+      <div>
+        <p class="foot__note">Your votes are saved on this device. Sourced from our partner vendors. Prices &amp; pieces are a starting ballot — swap in real photos and product links anytime.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     VENDOR SOURCES
+     The two partner storefronts you provided. Assign each product
+     a `source` link — paste the exact product URL per item to make
+     "View source" deep-link straight to the piece.
+     ============================================================ */
+  var SOURCES = {
+    jewelry: "https://a.aliexpress.com/_msqbsqx",
+    bags:    "https://a.aliexpress.com/_mtEMOIF"
+  };
+
+  /* Category metadata: label, chip emoji, media gradient */
+  var CATS = {
+    rings:      { label: "Rings",            emoji: "💍", grad: ["#ffc2e0", "#ff6fb0"] },
+    necklaces:  { label: "Necklaces",        emoji: "💎", grad: ["#cbeeff", "#4bb6ff"] },
+    bracelets:  { label: "Bracelets",        emoji: "🔗", grad: ["#c7f6e6", "#63dcb4"] },
+    earrings:   { label: "Earrings",         emoji: "✨", grad: ["#e7d7ff", "#b38bff"] },
+    hellokitty: { label: "Hello Kitty Bags", emoji: "🎀", grad: ["#ffd6e8", "#ff8fc0"] },
+    bape:       { label: "Bape Bags",        emoji: "🦈", grad: ["#dbf5a8", "#7bc94a"] }
+  };
+
+  /* ============================================================
+     PRODUCT CATALOG  (the ballot)
+     Edit freely. To use a real photo, add  image: "https://…"  and
+     it renders instead of the emoji tile. `base` = starting votes,
+     `goal` = votes needed to unlock the drop.
+     ============================================================ */
+  var PRODUCTS = [
+    { id: "r1", name: "Iced Butterfly Ring",       cat: "rings",      price: 24.00, base: 82,  goal: 100, badge: "hot", icon: "🦋", src: SOURCES.jewelry },
+    { id: "r2", name: "Cherry Bomb Signet",        cat: "rings",      price: 19.50, base: 47,  goal: 100, badge: null,  icon: "🍒", src: SOURCES.jewelry },
+    { id: "r3", name: "Frost Heart Ring",          cat: "rings",      price: 21.00, base: 63,  goal: 100, badge: null,  icon: "🧊", src: SOURCES.jewelry },
+    { id: "r4", name: "Bubblegum Baguette Ring",   cat: "rings",      price: 26.00, base: 31,  goal: 100, badge: "new", icon: "💗", src: SOURCES.jewelry },
+
+    { id: "n1", name: "Iced Heart Pendant",        cat: "necklaces",  price: 34.00, base: 118, goal: 120, badge: "hot", icon: "💗", src: SOURCES.jewelry },
+    { id: "n2", name: "Kitty Bow Choker",          cat: "necklaces",  price: 29.00, base: 74,  goal: 100, badge: null,  icon: "🎀", src: SOURCES.jewelry },
+    { id: "n3", name: "Angel Wing Chain",          cat: "necklaces",  price: 38.00, base: 56,  goal: 100, badge: null,  icon: "👼", src: SOURCES.jewelry },
+    { id: "n4", name: "Cherry Charm Necklace",     cat: "necklaces",  price: 27.00, base: 22,  goal: 100, badge: "new", icon: "🍒", src: SOURCES.jewelry },
+
+    { id: "b1", name: "Iced Tennis Bracelet",      cat: "bracelets",  price: 42.00, base: 91,  goal: 100, badge: "hot", icon: "💠", src: SOURCES.jewelry },
+    { id: "b2", name: "Charm Party Bracelet",      cat: "bracelets",  price: 23.00, base: 68,  goal: 100, badge: null,  icon: "🧸", src: SOURCES.jewelry },
+    { id: "b3", name: "Baby Blue Beaded Bracelet", cat: "bracelets",  price: 18.00, base: 39,  goal: 100, badge: null,  icon: "🫐", src: SOURCES.jewelry },
+
+    { id: "e1", name: "Iced Hoop Earrings",        cat: "earrings",   price: 22.00, base: 79,  goal: 100, badge: "hot", icon: "💫", src: SOURCES.jewelry },
+    { id: "e2", name: "Cherry Drop Earrings",      cat: "earrings",   price: 17.00, base: 33,  goal: 100, badge: "new", icon: "🍒", src: SOURCES.jewelry },
+    { id: "e3", name: "Star Stud Set",             cat: "earrings",   price: 15.00, base: 51,  goal: 100, badge: null,  icon: "⭐", src: SOURCES.jewelry },
+
+    { id: "h1", name: "Hello Kitty Shoulder Bag",  cat: "hellokitty", price: 45.00, base: 134, goal: 120, badge: "hot", icon: "🎀", src: SOURCES.bags },
+    { id: "h2", name: "HK Quilted Crossbody",      cat: "hellokitty", price: 52.00, base: 88,  goal: 100, badge: null,  icon: "🐱", src: SOURCES.bags },
+    { id: "h3", name: "Kitty Plush Backpack",      cat: "hellokitty", price: 39.00, base: 61,  goal: 100, badge: null,  icon: "🧸", src: SOURCES.bags },
+    { id: "h4", name: "HK Mini Tote",              cat: "hellokitty", price: 33.00, base: 27,  goal: 100, badge: "new", icon: "🍓", src: SOURCES.bags },
+
+    { id: "p1", name: "Bape Shark Backpack",       cat: "bape",       price: 68.00, base: 103, goal: 100, badge: "hot", icon: "🦈", src: SOURCES.bags },
+    { id: "p2", name: "Bape Camo Shoulder Bag",    cat: "bape",       price: 49.00, base: 72,  goal: 100, badge: null,  icon: "🌿", src: SOURCES.bags },
+    { id: "p3", name: "Bape Mini Crossbody",       cat: "bape",       price: 44.00, base: 45,  goal: 100, badge: null,  icon: "🌀", src: SOURCES.bags },
+    { id: "p4", name: "Bape Waist Bag",            cat: "bape",       price: 41.00, base: 19,  goal: 100, badge: "new", icon: "🔥", src: SOURCES.bags }
+  ];
+
+  /* ============================================================
+     VOTE STORE
+     Votes persist per-device in localStorage. To make votes shared
+     across every visitor, replace the read/write below with calls
+     to your backend (e.g. fetch POST /api/vote) — the rest of the
+     UI already reacts to whatever count this returns.
+     ============================================================ */
+  var LS_KEY = "spoiled_iced_votes_v1";
+  var voted = {};
+  try { voted = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { voted = {}; }
+
+  function saveVotes() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(voted)); } catch (e) {}
+  }
+  function countFor(p) { return p.base + (voted[p.id] ? 1 : 0); }
+  function isUnlocked(p) { return countFor(p) >= p.goal; }
+
+  /* ---------- state ---------- */
+  var state = { cat: "all", sort: "trending", q: "", onlyMine: false };
+
+  /* ---------- element refs ---------- */
+  var grid = document.getElementById("grid");
+  var chipsEl = document.getElementById("chips");
+  var emptyEl = document.getElementById("empty");
+  var countLine = document.getElementById("countLine");
+  var searchEl = document.getElementById("search");
+  var sortEl = document.getElementById("sort");
+  var toastEl = document.getElementById("toast");
+  var myVotesCount = document.getElementById("myVotesCount");
+
+  /* ---------- ticker ---------- */
+  (function ticker() {
+    var msg = ["✦ Vote the drop", "Top-voted pieces get iced", "Your taste is the buy plan", "Rings · Necklaces · Bracelets · Hello Kitty · Bape", "New drops unlock at 100 votes"];
+    var line = msg.join("  ✦  ") + "  ✦  ";
+    document.getElementById("ticker").innerHTML = "<span>" + line + "</span><span>" + line + "</span>";
+  })();
+
+  /* ---------- chips ---------- */
+  function buildChips() {
+    var frag = "";
+    frag += chipHTML("all", "All pieces", "🛍️");
+    Object.keys(CATS).forEach(function (k) { frag += chipHTML(k, CATS[k].label, CATS[k].emoji); });
+    frag += '<button class="chip" data-cat="__mine" id="chipMine">🩷 My votes</button>';
+    chipsEl.innerHTML = frag;
+    chipsEl.querySelectorAll(".chip").forEach(function (c) {
+      c.addEventListener("click", function () {
+        var v = c.getAttribute("data-cat");
+        if (v === "__mine") { state.onlyMine = true; state.cat = "all"; }
+        else { state.onlyMine = false; state.cat = v; }
+        syncChips();
+        render();
+      });
+    });
+    syncChips();
+  }
+  function chipHTML(cat, label, emoji) {
+    return '<button class="chip" data-cat="' + cat + '"><span aria-hidden="true">' + emoji + "</span> " + label + "</button>";
+  }
+  function syncChips() {
+    chipsEl.querySelectorAll(".chip").forEach(function (c) {
+      var v = c.getAttribute("data-cat");
+      var on = state.onlyMine ? v === "__mine" : v === state.cat;
+      c.classList.toggle("active", on);
+    });
+  }
+
+  /* ---------- filtering + sorting ---------- */
+  function currentList() {
+    var list = PRODUCTS.slice();
+    if (state.onlyMine) list = list.filter(function (p) { return voted[p.id]; });
+    if (state.cat !== "all") list = list.filter(function (p) { return p.cat === state.cat; });
+    if (state.q) {
+      var q = state.q.toLowerCase();
+      list = list.filter(function (p) {
+        return p.name.toLowerCase().indexOf(q) > -1 || CATS[p.cat].label.toLowerCase().indexOf(q) > -1;
+      });
+    }
+    if (state.sort === "trending") list.sort(function (a, b) { return countFor(b) - countFor(a); });
+    else if (state.sort === "new") list.sort(function (a, b) { return (b.badge === "new") - (a.badge === "new"); });
+    else if (state.sort === "low") list.sort(function (a, b) { return a.price - b.price; });
+    else if (state.sort === "high") list.sort(function (a, b) { return b.price - a.price; });
+    return list;
+  }
+
+  /* rank map for the "most wanted" crowns (top 3 overall by votes) */
+  function topRanks() {
+    var ranked = PRODUCTS.slice().sort(function (a, b) { return countFor(b) - countFor(a); });
+    var map = {};
+    for (var i = 0; i < 3 && i < ranked.length; i++) map[ranked[i].id] = i + 1;
+    return map;
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    var list = currentList();
+    var ranks = topRanks();
+    grid.innerHTML = "";
+    emptyEl.hidden = list.length > 0;
+
+    countLine.textContent = "";
+    if (list.length) {
+      countLine.innerHTML = "Showing <b>" + list.length + "</b> " + (list.length === 1 ? "piece" : "pieces") +
+        (state.onlyMine ? " you voted for" : "") + " · sorted by " + sortLabel();
+    }
+
+    list.forEach(function (p, i) {
+      grid.appendChild(cardEl(p, ranks[p.id]));
+    });
+    observeCards();
+    updateMyVotes();
+  }
+  function sortLabel() {
+    return { trending: "most wanted", "new": "newest", low: "price ↑", high: "price ↓" }[state.sort];
+  }
+
+  function cardEl(p, rank) {
+    var cat = CATS[p.cat];
+    var count = countFor(p);
+    var unlocked = isUnlocked(p);
+    var pct = Math.min(100, Math.round((count / p.goal) * 100));
+
+    var el = document.createElement("article");
+    el.className = "card" + (unlocked ? " unlocked" : "");
+    el.setAttribute("data-id", p.id);
+
+    var media = p.image
+      ? '<img src="' + p.image + '" alt="' + esc(p.name) + '" loading="lazy" />'
+      : '<span class="glyph" role="img" aria-label="' + esc(p.name) + '">' + p.icon + "</span>";
+
+    var badge = p.badge ? '<span class="badge ' + p.badge + '">' + (p.badge === "hot" ? "🔥 Hot" : "✨ New") + "</span>" : "";
+    var crown = rank ? '<span class="rank">' + (rank === 1 ? "👑 #1 Most wanted" : "#" + rank + " Most wanted") + "</span>" : "";
+
+    el.style.setProperty("--g1", cat.grad[0]);
+    el.style.setProperty("--g2", cat.grad[1]);
+
+    el.innerHTML =
+      '<div class="card__media" style="background:linear-gradient(155deg,' + cat.grad[0] + "," + cat.grad[1] + ')">' +
+        media +
+        '<span class="sheen"></span><span class="dots"></span>' +
+        '<span class="tag">' + cat.emoji + " " + cat.label + "</span>" +
+        badge + crown +
+      "</div>" +
+      '<div class="card__body">' +
+        '<div class="card__top">' +
+          '<div><h3 class="card__name">' + esc(p.name) + "</h3>" +
+          '<a class="card__src" href="' + p.src + '" target="_blank" rel="noopener">View source ↗</a></div>' +
+          '<span class="card__price">$' + p.price.toFixed(2) + "</span>" +
+        "</div>" +
+        '<div class="progress">' +
+          '<div class="progress__meta"><span>' + (unlocked ? "✨ Drop unlocked!" : "Votes to unlock") + '</span><span class="goal">' + count + " / " + p.goal + "</span></div>" +
+          '<div class="bar"><div class="bar__fill" data-pct="' + pct + '"></div></div>' +
+        "</div>" +
+        '<div class="vote-row">' +
+          '<button class="vote-btn' + (voted[p.id] ? " voted" : "") + '" aria-pressed="' + (voted[p.id] ? "true" : "false") + '">' +
+            '<span class="heart" aria-hidden="true">' + (voted[p.id] ? "🩷" : "🤍") + '</span> ' +
+            "<span class=\"vb-label\">" + (voted[p.id] ? "Voted" : "Vote") + "</span>" +
+          "</button>" +
+          '<div class="vote-count"><span class="vc-num">' + count + "</span><small>votes</small></div>" +
+        "</div>" +
+      "</div>";
+
+    var btn = el.querySelector(".vote-btn");
+    btn.addEventListener("click", function (ev) { toggleVote(p, el, ev); });
+
+    return el;
+  }
+
+  /* animate progress bars once cards are in the DOM */
+  function fillBars(scope) {
+    (scope || document).querySelectorAll(".bar__fill").forEach(function (f) {
+      requestAnimationFrame(function () { f.style.width = f.getAttribute("data-pct") + "%"; });
+    });
+  }
+
+  /* ---------- voting ---------- */
+  function toggleVote(p, el, ev) {
+    var wasVoted = !!voted[p.id];
+    var wasUnlocked = isUnlocked(p);
+
+    if (wasVoted) { delete voted[p.id]; }
+    else { voted[p.id] = 1; heartBurst(ev); }
+    saveVotes();
+
+    var nowUnlocked = isUnlocked(p);
+    var count = countFor(p);
+
+    // update this card in place
+    var btn = el.querySelector(".vote-btn");
+    var heart = el.querySelector(".heart");
+    var label = el.querySelector(".vb-label");
+    var vcNum = el.querySelector(".vc-num");
+    var vcBox = el.querySelector(".vote-count");
+    var barFill = el.querySelector(".bar__fill");
+    var goalEl = el.querySelector(".progress__meta .goal");
+    var metaLabel = el.querySelector(".progress__meta span:first-child");
+
+    btn.classList.toggle("voted", !!voted[p.id]);
+    btn.setAttribute("aria-pressed", voted[p.id] ? "true" : "false");
+    heart.textContent = voted[p.id] ? "🩷" : "🤍";
+    label.textContent = voted[p.id] ? "Voted" : "Vote";
+    vcNum.textContent = count;
+    goalEl.textContent = count + " / " + p.goal;
+    barFill.setAttribute("data-pct", Math.min(100, Math.round((count / p.goal) * 100)));
+    barFill.style.width = Math.min(100, Math.round((count / p.goal) * 100)) + "%";
+    el.classList.toggle("unlocked", nowUnlocked);
+    metaLabel.textContent = nowUnlocked ? "✨ Drop unlocked!" : "Votes to unlock";
+
+    vcBox.classList.remove("bump"); void vcBox.offsetWidth; vcBox.classList.add("bump");
+
+    // just crossed the goal → celebrate
+    if (!wasUnlocked && nowUnlocked) { confetti(); toast("✨ " + p.name + " unlocked the drop!"); }
+    else if (!wasVoted) { toast("Added to your votes 🩷"); }
+    else { toast("Vote removed"); }
+
+    updateMyVotes();
+    updateStats();
+    updateCrowns();
+
+    // if we're on the "My votes" view and just un-voted, drop it out
+    if (state.onlyMine && wasVoted) { setTimeout(render, 220); }
+  }
+
+  function updateMyVotes() {
+    var n = Object.keys(voted).length;
+    myVotesCount.textContent = n;
+  }
+
+  /* re-evaluate the top-3 crowns live without a full re-render */
+  function updateCrowns() {
+    var ranks = topRanks();
+    grid.querySelectorAll(".card").forEach(function (el) {
+      var id = el.getAttribute("data-id");
+      var existing = el.querySelector(".rank");
+      if (existing) existing.remove();
+      if (ranks[id]) {
+        var s = document.createElement("span");
+        s.className = "rank";
+        s.textContent = ranks[id] === 1 ? "👑 #1 Most wanted" : "#" + ranks[id] + " Most wanted";
+        el.querySelector(".card__media").appendChild(s);
+      }
+    });
+  }
+
+  /* ---------- fx ---------- */
+  function heartBurst(ev) {
+    if (!ev || prefersReduced()) return;
+    var hearts = ["🩷", "💖", "✦", "💗", "✧"];
+    for (var i = 0; i < 6; i++) {
+      var h = document.createElement("div");
+      h.className = "fly-heart";
+      h.textContent = hearts[i % hearts.length];
+      h.style.left = ev.clientX + "px";
+      h.style.top = ev.clientY + "px";
+      h.style.setProperty("--dx", (Math.random() * 80 - 40) + "px");
+      h.style.animationDelay = (i * 0.04) + "s";
+      document.body.appendChild(h);
+      setTimeout(function (node) { return function () { node.remove(); }; }(h), 1100);
+    }
+  }
+
+  function confetti() {
+    if (prefersReduced()) return;
+    var colors = ["#ff4d9d", "#3fbcff", "#c39bff", "#ffd76a", "#7beecb"];
+    for (var i = 0; i < 70; i++) {
+      var c = document.createElement("div");
+      c.className = "confetti";
+      var size = 6 + Math.random() * 8;
+      c.style.width = size + "px";
+      c.style.height = size * 0.6 + "px";
+      c.style.background = colors[i % colors.length];
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.opacity = "0.9";
+      var dur = 2.2 + Math.random() * 1.8;
+      c.style.transition = "transform " + dur + "s cubic-bezier(.2,.6,.4,1), opacity " + dur + "s";
+      document.body.appendChild(c);
+      (function (node) {
+        requestAnimationFrame(function () {
+          node.style.transform = "translateY(110vh) rotate(" + (Math.random() * 720 - 360) + "deg)";
+          node.style.opacity = "0";
+        });
+        setTimeout(function () { node.remove(); }, dur * 1000 + 200);
+      })(c);
+    }
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+
+  function prefersReduced() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  /* ---------- scroll reveal ---------- */
+  var io;
+  function observeCards() {
+    if (!("IntersectionObserver" in window)) {
+      grid.querySelectorAll(".card").forEach(function (c, i) { c.classList.add("in"); });
+      fillBars(grid);
+      return;
+    }
+    if (io) io.disconnect();
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          var card = e.target;
+          var idx = Array.prototype.indexOf.call(grid.children, card);
+          setTimeout(function () { card.classList.add("in"); fillBars(card); }, Math.min(idx, 8) * 55);
+          io.unobserve(card);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+    grid.querySelectorAll(".card").forEach(function (c) { io.observe(c); });
+  }
+
+  /* ---------- stats (hero) ---------- */
+  function totalVotes() {
+    return PRODUCTS.reduce(function (sum, p) { return sum + countFor(p); }, 0);
+  }
+  function dropsUnlocked() {
+    return PRODUCTS.filter(isUnlocked).length;
+  }
+  function updateStats() {
+    setNum(document.getElementById("statVotes"), totalVotes());
+    setNum(document.getElementById("statDrops"), dropsUnlocked());
+  }
+  function setNum(el, val) { if (el) el.textContent = val.toLocaleString(); }
+
+  function countUp(el, target) {
+    if (prefersReduced()) { el.textContent = target.toLocaleString(); return; }
+    var start = 0, dur = 1100, t0 = null;
+    function step(ts) {
+      if (!t0) t0 = ts;
+      var prog = Math.min(1, (ts - t0) / dur);
+      var eased = 1 - Math.pow(1 - prog, 3);
+      el.textContent = Math.round(start + (target - start) * eased).toLocaleString();
+      if (prog < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function initStatsAnimation() {
+    var pieces = PRODUCTS.length, votes = totalVotes(), drops = dropsUnlocked();
+    var hero = document.querySelector(".hero__stats");
+    var done = false;
+    function run() {
+      if (done) return; done = true;
+      countUp(document.getElementById("statPieces"), pieces);
+      countUp(document.getElementById("statVotes"), votes);
+      countUp(document.getElementById("statDrops"), drops);
+    }
+    if ("IntersectionObserver" in window) {
+      var so = new IntersectionObserver(function (ents) {
+        ents.forEach(function (e) { if (e.isIntersecting) { run(); so.disconnect(); } });
+      }, { threshold: 0.4 });
+      so.observe(hero);
+    } else { run(); }
+  }
+
+  /* ---------- util ---------- */
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  /* ---------- wire controls ---------- */
+  searchEl.addEventListener("input", function () { state.q = searchEl.value.trim(); render(); });
+  sortEl.addEventListener("change", function () { state.sort = sortEl.value; render(); });
+  document.getElementById("myVotesBtn").addEventListener("click", function () {
+    state.onlyMine = true; state.cat = "all"; syncChips();
+    document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
+    render();
+  });
+  document.getElementById("link-most").addEventListener("click", function () {
+    state.sort = "trending"; sortEl.value = "trending"; state.onlyMine = false; syncChips(); render();
+  });
+
+  /* ---------- go ---------- */
+  buildChips();
+  render();
+  initStatsAnimation();
+})();
+</script>
+</body>
+</html>
