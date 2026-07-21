@@ -5,18 +5,36 @@ A storefront-style **voting marketplace**. Visitors scroll a full catalog of pie
 what they want stocked. The most-wanted pieces hit their vote goal, "unlock the drop,"
 and are the ones you add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
 
-It's a single, self-contained `index.html` — no build step, no dependencies. Open it,
-host it, or drop it into Shopify.
+It's a single, self-contained `index.html` — no build step, no dependencies (the logo is
+embedded inline). Open it, host it, or drop it into Shopify.
 
 ## What it does
 
+- **Intro splash** on first open: the logo's pieces (letters *and* charms) fall from the top,
+  sparkle, and assemble into the full logo. Plays once per session; tap to skip; skipped
+  entirely for visitors who prefer reduced motion.
 - **Storefront catalog** with category filters (All, Rings, Necklaces, Bracelets, Earrings, Hello Kitty, Bape) plus search and sort.
-- **Vote on any piece** with the heart button. Votes toggle on/off, one per piece per device.
+- **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
-- **Most-wanted crowns** (👑 #1, #2, #3) update live as votes come in; sort by *Most wanted* to see the leaderboard.
+- **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
+  drop reserves it (quantity + email) — no charge now, they're first in line when it lands.
+  A **Reserved** counter in the header opens their list of pre-orders.
+- **Most-wanted ranks** (#1, #2, #3) update live as votes come in; sort by *Most wanted* to see the leaderboard.
 - **"My votes"** view so a visitor can see everything they picked.
-- **Live hero stats**: pieces up for vote, total votes cast, drops unlocked.
-- Fully responsive, Y2K kawaii-luxe design, respects reduced-motion preferences.
+- **Live hero stats**: pieces on the ballot, total votes cast, drops unlocked.
+- Fully responsive, Liquid Chrome Street-Luxe design, respects reduced-motion preferences.
+
+## Your logo &amp; the intro
+
+The real logo is embedded as a transparent image in the `--logo` CSS variable at the top of
+the `<style>` block, and used in the header, the footer, and the intro animation. To swap in
+a different file, replace that one `--logo: url("data:image/png;base64,…")` value with
+`url("your-logo.png")` (or a data URI) — everything else updates automatically.
+
+The intro splits the logo into a 7×5 grid of pieces that fall and reassemble. Tune it in
+`initIntro()`: `cols`/`rows` (how many pieces), the fall `transition` timing, or the
+auto-dismiss timeout. It's gated by `sessionStorage` so it plays on a fresh visit but not on
+every refresh.
 
 ## Customize it
 
@@ -107,15 +125,22 @@ from:
 > returns a sign/auth error, switch `ALIEXPRESS_SIGN_METHOD` to `md5`. Once you have real
 > credentials we can confirm the right setting together against the live `?debug=1` output.
 
-## Votes: device vs. shared
+## Votes &amp; pre-orders: device vs. shared
 
-By default votes are saved in the browser's `localStorage` — **per device**. Great for a
-demo or a light launch, but each visitor sees their own tally on top of the seeded numbers.
+By default votes **and pre-orders** are saved in the browser's `localStorage` — **per
+device**. Great for a demo or a light launch, but each visitor sees their own tally on top of
+the seeded numbers.
 
-To make votes **shared across all visitors**, wire up a backend. The `VOTE STORE` section
-in the script is isolated for exactly this — replace `saveVotes()` / the initial read with
-`fetch()` calls to an API (e.g. a tiny serverless function, Supabase, Firebase, or a
-Google Sheet endpoint). The whole UI already reacts to whatever count the store returns.
+To make votes **shared across all visitors**, wire up a backend. The `STORES` section in the
+script is isolated for exactly this — replace the `localStorage` read/write helpers with
+`fetch()` calls to an API (a tiny serverless function, Supabase, Firebase, or a Google Sheet
+endpoint). The whole UI already reacts to whatever count the store returns.
+
+**Pre-orders** currently reserve a piece (name, quantity, email) with **no charge** and store
+it locally. To make them real orders, use the clearly-marked `HOOK` line in `submitPreorder()`:
+POST the reservation to your backend / email service, or redirect to a Shopify checkout /
+pre-order product so the customer can pay. The confirmation copy already promises "no charge
+now — we'll email you when it's ready," so it's honest either way.
 
 ## Deploy
 
