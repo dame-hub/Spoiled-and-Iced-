@@ -6,8 +6,8 @@ stocked. The most-wanted pieces hit their vote goal, "unlock the drop," and are 
 add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
 
 The catalog ships with **20 real products** — names, prices, ratings, "sold" counts and photos
-extracted from the Alex Handwork Store jewelry catalog. Styled in a dark, girly liquid-chrome
-look with pink/rose/lilac tones.
+extracted from the Alex Handwork Store jewelry catalog. Styled in a light bubblegum-pink theme that matches the Spoiled & Iced
+Shopify storefront (pale pink background, dark-plum text, pink accents).
 
 It's a single, self-contained `index.html` — no build step, no dependencies (the logo is
 embedded inline). Open it, host it, or drop it into Shopify.
@@ -33,7 +33,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
 - **Optimized for iPhone / mobile**: single-column catalog, a big unmistakable **Vote** button (with a "Skip the wait" pre-order beneath it), a "How to vote" guide bar, large tap targets, and iOS-safe inputs/insets.
 - 67 real products (original catalog photos): jewelry (incl. 35 Hello Kitty Barbie ring variants) plus Hello Kitty & Bape bags.
-- Fully responsive, dark girly liquid-chrome design, respects reduced-motion preferences.
+- Fully responsive, light bubblegum-pink theme (matches the Shopify storefront), respects reduced-motion preferences.
 
 ## Backend, auto-emails &amp; your private Host Hub (5-minute setup)
 
