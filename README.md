@@ -18,7 +18,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
   top, sparkle, and assemble into the full logo, then a "Click to enter" prompt waits — the
   site opens only when the visitor clicks/taps (no auto-dismiss). Shown once per session;
   reduced-motion users get the same gate without the animation.
-- **First-visit disclaimer pop-up** (once per device): prices are marked up over vendor cost, some photos are stock vendor images, with an X to close and a button through to the Deluxe Vendors List.
+- **Disclaimer pop-up** (shown on every visit): prices are marked up over vendor cost, some photos are stock vendor images, with an X to close and a button through to the Deluxe Vendors List.
 - **Hero collage of real products** (photos pulled from the live catalog, not emoji).
 - **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
