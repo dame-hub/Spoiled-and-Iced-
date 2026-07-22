@@ -14,10 +14,12 @@ embedded inline). Open it, host it, or drop it into Shopify.
 
 ## What it does
 
-- **Intro splash** on first open: the logo's pieces (letters *and* charms) fall from the top,
-  sparkle, and assemble into the full logo. Plays once per session; tap to skip; skipped
-  entirely for visitors who prefer reduced motion.
-- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets) plus search and sort. Cards show real photos, prices (with original-price strikethrough), star rating and "sold" counts.
+- **Click-to-enter intro**: on arrival the logo's pieces (letters *and* charms) fall from the
+  top, sparkle, and assemble into the full logo, then a "Click to enter" prompt waits — the
+  site opens only when the visitor clicks/taps (no auto-dismiss). Shown once per session;
+  reduced-motion users get the same gate without the animation.
+- **Hero collage of real products** (photos pulled from the live catalog, not emoji).
+- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the

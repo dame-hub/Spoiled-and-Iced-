@@ -154,11 +154,14 @@
   #intro .stage{ position:relative; width:min(380px,78vw); aspect-ratio:480/379; }
   #intro .tile{ position:absolute; background-image:var(--logo); background-repeat:no-repeat; will-change:transform,opacity; }
   #intro .hint{
-    position:absolute; left:0; right:0; bottom:8%; text-align:center;
-    font-family:var(--font-mono); font-size:.68rem; letter-spacing:.24em; text-transform:uppercase;
-    color:var(--txt-mute); opacity:0; animation:hintIn .7s ease 1.8s forwards;
+    position:absolute; left:50%; bottom:9%; transform:translateX(-50%);
+    font-family:var(--font-mono); font-weight:600; font-size:.74rem; letter-spacing:.22em; text-transform:uppercase;
+    color:#fff; background:rgba(255,61,154,.16); border:1px solid rgba(255,61,154,.55);
+    padding:12px 22px; border-radius:999px; white-space:nowrap; opacity:0; cursor:pointer;
+    animation:hintIn .6s ease 1.5s forwards, hintPulse 2s ease-in-out 2.2s infinite;
   }
-  @keyframes hintIn{ to{ opacity:.7; } }
+  @keyframes hintIn{ to{ opacity:1; } }
+  @keyframes hintPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,61,154,0); } 50%{ box-shadow:0 0 22px 3px rgba(255,61,154,.5); } }
   #intro .isk{ position:absolute; pointer-events:none; opacity:0; line-height:1; text-shadow:0 0 8px currentColor; }
   @keyframes iskTw{ 0%{opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(0);} 45%{opacity:1; transform:translate(-50%,-50%) scale(1.15) rotate(25deg);} 100%{opacity:0; transform:translate(-50%,-50%) scale(.5) rotate(60deg);} }
 
@@ -169,6 +172,20 @@
     transition:color .2s; padding:4px 0; position:relative;
   }
   .nav__links a:hover{ color:var(--pink); }
+
+  /* mobile hamburger + dropdown menu */
+  .nav__burger{ display:none; flex-direction:column; gap:4px; width:42px; height:42px; align-items:center; justify-content:center; background:var(--bg-2); border:1px solid var(--line); border-radius:12px; cursor:pointer; flex:0 0 auto; }
+  .nav__burger span{ width:18px; height:2px; background:var(--txt); border-radius:2px; transition:transform .25s ease, opacity .2s; }
+  .nav__burger[aria-expanded="true"] span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+  .nav__burger[aria-expanded="true"] span:nth-child(2){ opacity:0; }
+  .nav__burger[aria-expanded="true"] span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+  .navmenu{ display:none; position:absolute; left:0; right:0; top:100%; flex-direction:column;
+    background:rgba(12,10,13,.98); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line-2); padding:6px 6vw 16px; box-shadow:0 24px 40px -20px rgba(0,0,0,.8); }
+  .navmenu.open{ display:flex; }
+  .navmenu a{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; font-size:.92rem;
+    color:var(--txt); text-decoration:none; padding:16px 4px; border-bottom:1px solid var(--line); }
+  .navmenu a:last-child{ border-bottom:none; color:var(--pink); }
 
   .pills{ display:flex; gap:.5rem; }
   .pill{
@@ -229,23 +246,20 @@
     background:radial-gradient(circle at 50% 40%, rgba(55,216,255,.25), rgba(255,46,136,.14) 45%, transparent 70%);
     filter:blur(6px); animation:float 8s ease-in-out infinite;
   }
-  .showcase .biggem{
-    position:absolute; left:50%; top:46%; translate:-50% -50%;
-    width:210px; height:210px; filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));
-    animation:spin 22s linear infinite;
-  }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-  .tile{
-    position:absolute; border-radius:16px; display:grid; place-items:center;
-    font-size:2.2rem; background:var(--bg-2); border:1px solid var(--line-2);
-    box-shadow:0 18px 40px -20px rgba(0,0,0,.8); backdrop-filter:blur(4px);
+  /* hero product-photo collage (real pieces, not emoji) */
+  .showcase .pcard{
+    position:absolute; border-radius:20px; overflow:hidden;
+    border:2px solid rgba(255,255,255,.1); background:#16141a;
+    box-shadow:0 18px 42px -18px rgba(0,0,0,.85);
     animation:float 6s ease-in-out infinite;
   }
-  .tile::after{ content:""; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 45%); }
-  .tile.a{ width:104px; height:120px; left:0; top:8%; transform:rotate(-8deg); }
-  .tile.b{ width:96px; height:96px; right:2%; top:2%; transform:rotate(7deg); animation-delay:-2s; }
-  .tile.c{ width:92px; height:112px; right:6%; bottom:4%; transform:rotate(-5deg); animation-delay:-1s; }
-  .tile.d{ width:88px; height:88px; left:8%; bottom:6%; transform:rotate(9deg); animation-delay:-3.4s; }
+  .showcase .pcard img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .showcase .pcard::after{ content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 42%); }
+  .pcard.center{ width:212px; height:212px; left:50%; margin-left:-106px; top:calc(46% - 106px); z-index:2; border-color:rgba(255,61,154,.45); box-shadow:0 26px 56px -16px rgba(255,61,154,.42); }
+  .pcard.a{ width:120px; height:142px; left:0; top:5%; transform:rotate(-7deg); }
+  .pcard.b{ width:108px; height:108px; right:1%; top:0; transform:rotate(6deg); animation-delay:-2s; }
+  .pcard.c{ width:110px; height:132px; right:3%; bottom:3%; transform:rotate(-5deg); animation-delay:-1s; }
+  .pcard.d{ width:98px; height:98px; left:6%; bottom:5%; transform:rotate(9deg); animation-delay:-3.4s; }
   @keyframes float{ 0%,100%{ translate:0 0; } 50%{ translate:0 -14px; } }
   .spark{ position:absolute; color:#fff; opacity:.8; animation:tw 2.6s ease-in-out infinite; }
   .spark.s1{ left:44%; top:14%; font-size:1.1rem; }
@@ -537,9 +551,13 @@
   /* ---------- responsive ---------- */
   @media (max-width:880px){
     .hero__grid{ grid-template-columns:1fr; gap:1.5rem; }
-    .showcase{ height:300px; order:-1; }
+    .showcase{ height:290px; order:-1; }
+    .pcard.center{ width:170px; height:170px; margin-left:-85px; top:calc(46% - 85px); }
+    .pcard.a{ width:96px; height:116px; } .pcard.b{ width:88px; height:88px; }
+    .pcard.c{ width:90px; height:108px; } .pcard.d{ width:80px; height:80px; }
     .steps{ grid-template-columns:1fr; }
     .nav__links{ display:none; }
+    .nav__burger{ display:flex; }
     .controls{ top:64px; }
     .brand__logo{ height:40px; }
     .vendors__card{ grid-template-columns:1fr; }
@@ -615,7 +633,7 @@
 <!-- ===== intro splash (logo pieces fall + sparkle) ===== -->
 <div id="intro" aria-hidden="true">
   <div class="stage" id="introStage"></div>
-  <div class="hint">Tap to enter ✦</div>
+  <div class="hint">✦ Click to enter</div>
 </div>
 
 <!-- ===== ticker ===== -->
@@ -641,8 +659,16 @@
       <button class="pill" id="myVotesBtn" aria-label="View pieces you voted for">
         <span aria-hidden="true">♥</span> <span class="lbltext">My votes</span> <span class="n" id="myVotesCount">0</span>
       </button>
+      <button class="nav__burger" id="burger" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </div>
+  <nav class="navmenu" id="navmenu" aria-label="Mobile">
+    <a href="#catalog" data-nav>Shop the vote</a>
+    <a href="#how" data-nav>How it works</a>
+    <a href="#catalog" id="menu-most" data-nav>Most wanted</a>
+    <a href="#vendors" data-nav>Vendors list ✦</a>
+    <a href="https://spoiled-iced-store.myshopify.com/" target="_blank" rel="noopener" data-nav>Visit the store ↗</a>
+  </nav>
 </header>
 
 <a id="top"></a>
@@ -669,16 +695,13 @@
         <span><b>96.8%</b> positive reviews</span>
       </div>
     </div>
-    <div class="showcase" aria-hidden="true">
+    <div class="showcase" id="showcase" aria-hidden="true">
       <div class="halo"></div>
-      <svg class="biggem" viewBox="0 0 48 48">
-        <path d="M24 3 L45 18 L24 45 L3 18 Z" fill="url(#chromeGrad)" stroke="#fff" stroke-opacity=".5"/>
-        <path d="M3 18 H45 M24 3 L15 18 L24 45 M24 3 L33 18 L24 45 M15 18 L33 18" fill="none" stroke="#0A0B0E" stroke-opacity=".3" stroke-width="1"/>
-      </svg>
-      <div class="tile a">💍</div>
-      <div class="tile b">🎀</div>
-      <div class="tile c">🦈</div>
-      <div class="tile d">💎</div>
+      <div class="pcard center" data-pick="j13"></div>
+      <div class="pcard a" data-pick="j2"></div>
+      <div class="pcard b" data-pick="hk8"></div>
+      <div class="pcard c" data-pick="j16"></div>
+      <div class="pcard d" data-pick="j20"></div>
       <span class="spark s1">✦</span>
       <span class="spark s2">✧</span>
     </div>
@@ -1036,10 +1059,6 @@
     var mediaBg = "radial-gradient(120% 100% at 50% 0%," + cat.glow + "2e, transparent 62%), linear-gradient(180deg,#1B1D23,#101216)";
 
     var srcHTML = p.src ? '<a class="card__src" href="' + esc(p.src) + '" target="_blank" rel="noopener">View ↗</a>' : "";
-    var mparts = [];
-    if (p.rating) mparts.push('<span class="rt">★</span> ' + esc(String(p.rating)));
-    if (p.sold) mparts.push(esc(String(p.sold)));
-    var metaHTML = mparts.length ? '<div class="card__meta">' + mparts.join(" · ") + "</div>" : "";
     var priceHTML = '<div class="card__pricebox"><span class="card__price">$' + p.price.toFixed(2) + "</span>" +
       (p.orig ? '<span class="card__orig">$' + p.orig.toFixed(2) + "</span>" : "") + "</div>";
 
@@ -1050,7 +1069,7 @@
       "</div>" +
       '<div class="card__body">' +
         '<div class="card__top"><div class="card__head">' +
-          '<h3 class="card__name">' + esc(p.name) + "</h3>" + srcHTML + metaHTML +
+          '<h3 class="card__name">' + esc(p.name) + "</h3>" + srcHTML +
         "</div>" + priceHTML + "</div>" +
         '<div class="progress">' +
           '<div class="progress__meta"><span>' + (unlocked ? "✦ Drop unlocked" : "Votes to unlock") + '</span><span class="goal">' + count + " / " + p.goal + "</span></div>" +
@@ -1334,6 +1353,22 @@
     if (!list || !list.length) return;
     PRODUCTS = list; render();
     setNum(byId("statPieces"), PRODUCTS.length); updateStats();
+    buildShowcase();
+  }
+
+  /* fill the hero collage with real product photos (no emoji) */
+  function buildShowcase() {
+    var sc = byId("showcase"); if (!sc) return;
+    var map = {}; PRODUCTS.forEach(function (p) { map[p.id] = p; });
+    var withImg = PRODUCTS.filter(function (p) { return p.image; });
+    var used = {};
+    sc.querySelectorAll(".pcard").forEach(function (card) {
+      var pick = card.getAttribute("data-pick");
+      var p = (map[pick] && map[pick].image) ? map[pick] : null;
+      if (!p) { for (var i = 0; i < withImg.length; i++) { if (!used[withImg[i].id]) { p = withImg[i]; break; } } }
+      if (p) { used[p.id] = 1; card.innerHTML = '<img src="' + p.image + '" alt="" loading="lazy">'; card.style.display = ""; }
+      else { card.style.display = "none"; }
+    });
   }
   function hydrateFromApi() {
     if (!CONFIG.apiUrl || typeof fetch !== "function") return;
@@ -1351,6 +1386,18 @@
   byId("link-most").addEventListener("click", function () { state.sort = "trending"; sortEl.value = "trending"; state.onlyMine = false; syncChips(); render(); });
   byId("buyVendors").addEventListener("click", openVendorsCheckout);
   (function(){ var m=document.querySelector(".foot__col .js-most"); if(m) m.addEventListener("click", function(){ state.sort="trending"; sortEl.value="trending"; state.onlyMine=false; syncChips(); render(); }); var y=byId("yr"); if(y) y.textContent=new Date().getFullYear(); })();
+  /* mobile hamburger menu */
+  (function(){
+    var burger=byId("burger"), menu=byId("navmenu");
+    if(!burger||!menu) return;
+    burger.addEventListener("click", function(){
+      var open=menu.classList.toggle("open"); burger.setAttribute("aria-expanded", open?"true":"false");
+    });
+    menu.querySelectorAll("a").forEach(function(a){
+      a.addEventListener("click", function(){ menu.classList.remove("open"); burger.setAttribute("aria-expanded","false"); });
+    });
+    var mm=byId("menu-most"); if(mm) mm.addEventListener("click", function(){ state.sort="trending"; sortEl.value="trending"; state.onlyMine=false; syncChips(); render(); });
+  })();
   byId("modalClose").addEventListener("click", closeModal);
   overlay.addEventListener("click", function (e) { if (e.target === overlay) closeModal(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && overlay.classList.contains("open")) closeModal(); });
@@ -1369,9 +1416,10 @@
 
     var seen = false;
     try { seen = !!sessionStorage.getItem("si_intro"); } catch (e) {}
-    if (seen || prefersReduced()) { finish(); return; }
+    if (seen) { finish(); return; }               // already entered this session
     try { sessionStorage.setItem("si_intro", "1"); } catch (e) {}
 
+    var reduced = prefersReduced();
     document.body.style.overflow = "hidden";
     var stage = byId("introStage");
     var cols = 7, rows = 5, tiles = [];
@@ -1385,24 +1433,28 @@
         t.style.top = (r * 100 / rows) + "%";
         t.style.backgroundSize = (cols * 100) + "% " + (rows * 100) + "%";
         t.style.backgroundPosition = (c * 100 / (cols - 1)) + "% " + (r * 100 / (rows - 1)) + "%";
-        var rand = Math.random() * 2 - 1;
-        t.style.opacity = "0";
-        t.style.transform = "translate(" + (rand * 80) + "px,-115vh) rotate(" + (rand * 55) + "deg) scale(.5)";
-        var delay = (r * 0.05 + Math.random() * 0.4).toFixed(3);
-        t.style.transition = "transform .95s cubic-bezier(.16,.9,.26,1.28) " + delay + "s, opacity .45s ease " + delay + "s";
-        t.addEventListener("transitionend", function (e) { if (e.propertyName === "transform" && !finished) sparkleAt(this); });
+        if (reduced) {
+          t.style.opacity = "1"; t.style.transform = "none";     // static gate, no motion
+        } else {
+          var rand = Math.random() * 2 - 1;
+          t.style.opacity = "0";
+          t.style.transform = "translate(" + (rand * 80) + "px,-115vh) rotate(" + (rand * 55) + "deg) scale(.5)";
+          var delay = (r * 0.05 + Math.random() * 0.4).toFixed(3);
+          t.style.transition = "transform .95s cubic-bezier(.16,.9,.26,1.28) " + delay + "s, opacity .45s ease " + delay + "s";
+          t.addEventListener("transitionend", function (e) { if (e.propertyName === "transform" && !finished) sparkleAt(this); });
+        }
         stage.appendChild(t); tiles.push(t);
       }
     }
-    requestAnimationFrame(function () { requestAnimationFrame(function () {
-      tiles.forEach(function (t) { t.style.transform = "none"; t.style.opacity = "1"; });
-    }); });
-    // safety: guarantee the assembled logo is visible even if transitions don't run
-    setTimeout(function () { tiles.forEach(function (t) { t.style.transform = "none"; t.style.opacity = "1"; }); }, 1700);
+    if (!reduced) {
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        tiles.forEach(function (t) { t.style.transform = "none"; t.style.opacity = "1"; });
+      }); });
+      setTimeout(function () { tiles.forEach(function (t) { t.style.transform = "none"; t.style.opacity = "1"; }); }, 1700);
+      for (var i = 0; i < 16; i++) (function (i) { setTimeout(function () { if (!finished) sparkleRandom(); }, 750 + i * 70); })(i);
+    }
 
-    for (var i = 0; i < 16; i++) (function (i) { setTimeout(function () { if (!finished) sparkleRandom(); }, 750 + i * 70); })(i);
-
-    var glyphs = ["✦", "✧", "✩", "❤", "✿"], cols3 = ["#ffffff", "#FF3D9A", "#FF7EC4", "#B98BFF"];
+    var glyphs = ["✦", "✧", "✩"], cols3 = ["#ffffff", "#FF3D9A", "#FF7EC4", "#B98BFF"];
     function mkSpark(leftPct, topPct, size) {
       var s = document.createElement("div"); s.className = "isk";
       s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
@@ -1420,13 +1472,13 @@
     }
     function sparkleRandom() { mkSpark(Math.random() * 100, Math.random() * 100, 10 + Math.random() * 14); }
 
-    var timer = setTimeout(finish, 3100);
-    intro.addEventListener("click", function () { clearTimeout(timer); finish(); });
-    document.addEventListener("keydown", function h(e) { clearTimeout(timer); finish(); document.removeEventListener("keydown", h); });
+    // Wait for the visitor to click / tap / press a key to enter — no auto-dismiss.
+    intro.addEventListener("click", finish);
+    document.addEventListener("keydown", function h(e) { finish(); document.removeEventListener("keydown", h); });
   }
 
   /* ---------- go ---------- */
-  buildChips(); render(); initStatsAnimation(); hydrateFromApi(); initIntro();
+  buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); initIntro();
 })();
 </script>
 </body>
