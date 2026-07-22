@@ -19,7 +19,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
   site opens only when the visitor clicks/taps (no auto-dismiss). Shown once per session;
   reduced-motion users get the same gate without the animation.
 - **Hero collage of real products** (photos pulled from the live catalog, not emoji).
-- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
+- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
@@ -31,7 +31,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **The Deluxe Vendors List** — a dedicated section selling one high-value digital product ($197), with its own checkout flow.
 - **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
 - **Optimized for iPhone / mobile**: single-column catalog, a big unmistakable **Vote** button (with a "Skip the wait" pre-order beneath it), a "How to vote" guide bar, large tap targets, and iOS-safe inputs/insets.
-- 54 real products (original catalog photos), including 35 individual Hello Kitty Barbie ring variants.
+- 67 real products (original catalog photos): jewelry (incl. 35 Hello Kitty Barbie ring variants) plus Hello Kitty & Bape bags.
 - Fully responsive, dark girly liquid-chrome design, respects reduced-motion preferences.
 
 ## Backend, auto-emails &amp; your private Host Hub (5-minute setup)
