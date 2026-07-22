@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
+<script>try{var _t=localStorage.getItem('si_theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
 <style>
   /* ============================================================
      SPOILED & ICED — voting marketplace
@@ -53,6 +54,41 @@
 
     --holo:linear-gradient(105deg,#ec5b9e,#c06be0 34%,#ff8ac0 62%,#e0428a 100%);
   }
+
+  /* ===================== DARK THEME (visitor toggle) ===================== */
+  :root[data-theme="dark"]{
+    --bg-0:#0A0B0E; --bg-1:#111318; --bg-2:#181A20; --bg-3:#20232B;
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.20);
+    --txt:#ECEEF3; --txt-dim:#98A0AE; --txt-mute:#646C7C;
+    --pink:#FF3D9A; --pink-deep:#FF1E86; --magenta:#FF2E88; --rose:#FF7EC4; --blush:#FFB8DE; --cyan:#B98BFF;
+    --holo:linear-gradient(105deg,#ffd6f0,#ffa7e0 24%,#c6a7ff 50%,#ff9ecf 76%,#ffd6f0);
+  }
+  :root[data-theme="dark"] body::before{
+    background:
+      radial-gradient(48vw 42vw at 82% -6%, rgba(255,126,196,0.16), transparent 60%),
+      radial-gradient(42vw 42vw at 6% 4%, rgba(255,46,136,0.16), transparent 62%),
+      radial-gradient(60vw 50vw at 50% 116%, rgba(185,139,255,0.13), transparent 60%),
+      linear-gradient(180deg,#0E0A0D 0%, #120E13 45%, #0E0A0D 100%);
+  }
+  :root[data-theme="dark"] .chrome{ background:linear-gradient(180deg,#ffffff 0%,#dbe2ec 18%,#93a0b4 47%,#f2f5fa 53%,#aeb9cb 76%,#66707f 100%); -webkit-background-clip:text; background-clip:text; }
+  :root[data-theme="dark"] .ticker{ background:#0A0B0E; }
+  :root[data-theme="dark"] header.nav{ background:rgba(12,13,16,.72); }
+  :root[data-theme="dark"] .navmenu{ background:rgba(12,10,13,.98); }
+  :root[data-theme="dark"] .controls{ background:rgba(16,18,22,.86); }
+  :root[data-theme="dark"] .btn--acid{ color:#0A0B0E; }
+  :root[data-theme="dark"] .pcard{ background:#16141a; border-color:rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .chip.active{ color:#0A0B0E; }
+  :root[data-theme="dark"] .tag{ background:rgba(10,11,14,.7); }
+  :root[data-theme="dark"] .badge.new{ color:#04222b; }
+  :root[data-theme="dark"] .rank{ color:#0A0B0E; }
+  :root[data-theme="dark"] .vote-btn{ background:rgba(255,61,154,.12); color:#fff; border-color:rgba(255,61,154,.6); }
+  :root[data-theme="dark"] .vote-btn.voted{ color:#0A0B0E; }
+  :root[data-theme="dark"] .overlay{ background:rgba(6,7,9,.72); }
+  :root[data-theme="dark"] .toast{ color:#0A0B0E; }
+  :root[data-theme="dark"] .vendors__card{ background:linear-gradient(150deg,#1a1220,#14101a 60%,#120e16); }
+  :root[data-theme="dark"] .vendors__buy{ background:rgba(255,255,255,0.03); }
+  :root[data-theme="dark"] #intro{ background:radial-gradient(58vw 54vw at 50% 40%, rgba(255,61,154,.20), transparent 62%), radial-gradient(52vw 52vw at 50% 62%, rgba(185,139,255,.14), transparent 60%), #0E0A0D; }
+  /* ======================================================================= */
 
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
@@ -657,6 +693,9 @@
       <button class="pill" id="myVotesBtn" aria-label="View pieces you voted for">
         <span aria-hidden="true">♥</span> <span class="lbltext">My votes</span> <span class="n" id="myVotesCount">0</span>
       </button>
+      <button class="pill" id="themeToggle" aria-label="Switch between light and dark theme">
+        <span aria-hidden="true" id="themeIcon">☾</span> <span class="lbltext" id="themeLabel">Dark</span>
+      </button>
       <button class="nav__burger" id="burger" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -719,7 +758,7 @@
         <span class="emoji">🛍️</span>
         <div class="step__no chrome">01</div>
         <h3>Scroll the feed</h3>
-        <p>A full catalog of rings, earrings, necklaces &amp; bracelets — 18k &amp; 14k gold-plated, freshly sourced and waiting on your call.</p>
+        <p>A full catalog of 18k &amp; 14k gold-plated <b>and gold-filled</b> jewelry — rings, earrings, necklaces, bracelets — plus Hello Kitty &amp; Bape <b>bags</b>. Freshly sourced and waiting on your call.</p>
       </div>
       <div class="step">
         <span class="emoji">♥</span>
@@ -778,17 +817,17 @@
       <div class="vendors__body">
         <span class="kicker">Digital drop · For resellers</span>
         <h2 class="vendors__title">The Deluxe <span class="holo">Vendors List</span></h2>
-        <p class="vendors__lede">The vetted suppliers behind Spoiled &amp; Iced — 18k &amp; 14k gold-plated jewelry, Hello Kitty &amp; designer-inspired pieces, and hype bags. Direct contacts, minimums and pricing, in one instant download. Start your own line without the guesswork.</p>
+        <p class="vendors__lede">The vetted suppliers behind Spoiled &amp; Iced — <b>15+ vendors from low tier to high tier</b> for 18k &amp; 14k gold-plated and gold-filled jewelry, Hello Kitty &amp; designer-inspired pieces, and hype bags. Direct contacts, minimums and pricing, plus a <b>PDF guide on how to resell</b> — start your own line without the guesswork.</p>
         <ul class="vendors__feats">
-          <li><span>✦</span> 50+ vetted gold &amp; jewelry vendors, with direct contacts</li>
+          <li><span>✦</span> 15+ vetted vendors ranked low tier → high tier, with direct contacts</li>
           <li><span>✦</span> Bag &amp; accessory plugs — Hello Kitty &amp; designer-inspired</li>
           <li><span>✦</span> MOQs, unit pricing &amp; shipping times per vendor</li>
-          <li><span>✦</span> Instant PDF download + free lifetime updates</li>
+          <li><span>✦</span> A step-by-step PDF guide on how to resell + free lifetime updates</li>
         </ul>
       </div>
       <div class="vendors__buy">
         <div class="vendors__badge">🔐 Deluxe access</div>
-        <div class="vendors__price"><span class="was">$497</span><span class="now">$197</span></div>
+        <div class="vendors__price"><span class="was">$250</span><span class="now">$120</span></div>
         <div class="vendors__save">One-time payment · lifetime updates</div>
         <button class="btn btn--acid vendors__cta" id="buyVendors">Get instant access ⚡</button>
         <div class="vendors__note">🔒 Secure checkout · Instant delivery · Digital good</div>
@@ -885,6 +924,13 @@
     vendorsCheckoutUrl: ""
   };
 
+  /* a stable per-device id so the Host Hub can show who voted */
+  function getVid() {
+    var v; try { v = localStorage.getItem("si_vid"); } catch (e) {}
+    if (!v) { v = "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); try { localStorage.setItem("si_vid", v); } catch (e) {} }
+    return v;
+  }
+
   /* Capture events to your backend (non-blocking, never breaks the UI). */
   function capture(type, payload) {
     if (!CONFIG.captureUrl) return;
@@ -892,9 +938,39 @@
       fetch(CONFIG.captureUrl, {
         method: "POST", mode: "no-cors", keepalive: true,
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(Object.assign({ type: type, at: new Date().toISOString() }, payload || {}))
+        body: JSON.stringify(Object.assign({ type: type, at: new Date().toISOString(), vid: getVid() }, payload || {}))
       });
     } catch (e) {}
+  }
+
+  /* JSONP GET (Apps Script is JSONP-friendly and avoids CORS issues) */
+  function jsonp(base, params) {
+    return new Promise(function (resolve, reject) {
+      var cb = "sicb_" + Date.now() + Math.floor(Math.random() * 1e4);
+      params.callback = cb;
+      var qs = Object.keys(params).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); }).join("&");
+      var s = document.createElement("script");
+      var to = setTimeout(function () { done(); reject(new Error("timeout")); }, 12000);
+      function done() { clearTimeout(to); try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (s.parentNode) s.remove(); }
+      window[cb] = function (d) { done(); resolve(d); };
+      s.onerror = function () { done(); reject(new Error("net")); };
+      s.src = base + (base.indexOf("?") > -1 ? "&" : "?") + qs;
+      document.body.appendChild(s);
+    });
+  }
+
+  /* Pull shared per-piece vote counts from the backend so tallies are the same
+     for everyone. Falls back silently to seeded/local counts if not configured. */
+  function hydrateVoteCounts() {
+    if (!CONFIG.captureUrl) return;
+    jsonp(CONFIG.captureUrl, { action: "counts" }).then(function (d) {
+      if (!d || !d.counts) return;
+      var byName = {}; PRODUCTS.forEach(function (p) { byName[p.name] = p; });
+      Object.keys(d.counts).forEach(function (name) {
+        var p = byName[name]; if (p) { p.base = d.counts[name]; p._server = true; }
+      });
+      render(); updateStats();
+    }).catch(function () {});
   }
 
   /* Category metadata: label, chip emoji, girly glow color */
@@ -996,7 +1072,7 @@
   function readJSON(k, fallback) { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch (e) { return fallback; } }
   function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
-  function countFor(p) { return p.base + (voted[p.id] ? 1 : 0); }
+  function countFor(p) { return p._server ? p.base : (p.base + (voted[p.id] ? 1 : 0)); }
   function isUnlocked(p) { return countFor(p) >= p.goal; }
   function findProduct(id) { for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id === id) return PRODUCTS[i]; return null; }
 
@@ -1127,6 +1203,7 @@
   function toggleVote(p, el, ev) {
     var wasVoted = !!voted[p.id], wasUnlocked = isUnlocked(p);
     if (wasVoted) delete voted[p.id]; else { voted[p.id] = 1; heartBurst(ev); }
+    if (p._server) p.base += voted[p.id] ? 1 : -1;   // optimistic shared-count update
     save(LS_VOTES, voted);
     capture("vote", { id: p.id, name: p.name, cat: p.cat, price: p.price, voted: !!voted[p.id], count: countFor(p) });
     var nowUnlocked = isUnlocked(p), count = countFor(p);
@@ -1255,20 +1332,20 @@
 
   /* ---------- deluxe vendors list (digital product) ---------- */
   function openVendorsCheckout() {
-    capture("vendors_view", { product: "Deluxe Vendors List", price: 197 });
+    capture("vendors_view", { product: "Deluxe Vendors List", price: 120 });
     if (CONFIG.vendorsCheckoutUrl) { window.open(CONFIG.vendorsCheckoutUrl, "_blank", "noopener"); return; }
     openModal("Deluxe access", "Vendors List");
     modalBody.innerHTML =
       '<div class="po-item">' +
         '<div class="thumb" style="background:radial-gradient(120% 120% at 50% 0%,#B98BFF55,transparent),var(--bg-0)">🔐</div>' +
         '<div class="meta"><h4>The Deluxe Vendors List</h4><div class="cat">Instant PDF · lifetime updates</div></div>' +
-        '<div class="price">$197</div>' +
+        '<div class="price">$120</div>' +
       "</div>" +
       '<div class="field" id="vEmailField"><label for="vEmail">Email — where we send your download</label>' +
         '<input type="email" id="vEmail" placeholder="you@email.com" autocomplete="email" />' +
         '<div class="err">Enter a valid email so we can send your list.</div></div>' +
       '<p class="note">Secure one-time purchase. After payment, your download link is emailed instantly. Digital good — all sales final.</p>' +
-      '<button class="btn btn--acid" id="vSubmit">Complete purchase · $197</button>';
+      '<button class="btn btn--acid" id="vSubmit">Complete purchase · $120</button>';
     var em = byId("vEmail");
     setTimeout(function () { em.focus(); }, 60);
     em.addEventListener("input", function () { byId("vEmailField").classList.remove("invalid"); });
@@ -1278,7 +1355,7 @@
   function submitVendors(em) {
     var email = (em.value || "").trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { byId("vEmailField").classList.add("invalid"); em.focus(); return; }
-    capture("purchase", { product: "Deluxe Vendors List", price: 197, email: email });
+    capture("purchase", { product: "Deluxe Vendors List", price: 120, email: email });
     modalEyebrow.textContent = "Order received"; modalTitle.textContent = "You're in";
     modalBody.innerHTML = '<div class="po-success"><div class="big">🔐</div><h3>Almost yours</h3>' +
       '<p>Thanks! Your request for the <b>Deluxe Vendors List</b> is in. We\'ll email <b>' + esc(email) + '</b> your secure payment link and instant download.</p>' +
@@ -1428,6 +1505,20 @@
     });
     var mm=byId("menu-most"); if(mm) mm.addEventListener("click", function(){ state.sort="trending"; sortEl.value="trending"; state.onlyMine=false; syncChips(); render(); });
   })();
+  /* light / dark theme toggle */
+  (function(){
+    var root=document.documentElement, btn=byId("themeToggle"), icon=byId("themeIcon"), lbl=byId("themeLabel");
+    function apply(t){
+      if(t==="dark"){ root.setAttribute("data-theme","dark"); if(icon)icon.textContent="☀"; if(lbl)lbl.textContent="Light"; }
+      else { root.setAttribute("data-theme","light"); if(icon)icon.textContent="☾"; if(lbl)lbl.textContent="Dark"; }
+    }
+    var cur="light"; try{ cur=localStorage.getItem("si_theme")||"light"; }catch(e){}
+    apply(cur);
+    if(btn) btn.addEventListener("click", function(){
+      cur = (root.getAttribute("data-theme")==="dark") ? "light" : "dark";
+      apply(cur); try{ localStorage.setItem("si_theme",cur); }catch(e){}
+    });
+  })();
   byId("modalClose").addEventListener("click", closeModal);
   overlay.addEventListener("click", function (e) { if (e.target === overlay) closeModal(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && overlay.classList.contains("open")) closeModal(); });
@@ -1524,12 +1615,10 @@
   }
 
   /* ---------- go ---------- */
-  buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); initIntro();
+  buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); hydrateVoteCounts(); initIntro();
   /* count a visit once per session (feeds the private Host Hub) */
   (function(){ try{
-    var vid = localStorage.getItem("si_vid");
-    if(!vid){ vid = "v" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem("si_vid", vid); }
-    if(!sessionStorage.getItem("si_visit")){ sessionStorage.setItem("si_visit","1"); capture("visit", { visitorId: vid, ref: (document.referrer||"").slice(0,120) }); }
+    if(!sessionStorage.getItem("si_visit")){ sessionStorage.setItem("si_visit","1"); capture("visit", { ref: (document.referrer||"").slice(0,120) }); }
   }catch(e){} })();
 })();
 </script>

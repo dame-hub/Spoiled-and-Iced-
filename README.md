@@ -19,7 +19,8 @@ embedded inline). Open it, host it, or drop it into Shopify.
   site opens only when the visitor clicks/taps (no auto-dismiss). Shown once per session;
   reduced-motion users get the same gate without the animation.
 - **Disclaimer pop-up** (shown on every visit): prices are marked up over vendor cost, some photos are stock vendor images, with an X to close and a button through to the Deluxe Vendors List.
-- **Hero collage of real products** (photos pulled from the live catalog, not emoji).
+- **Light / dark theme toggle** in the header — visitors pick the bubblegum-light look (default, matches the store) or the dark liquid-chrome look; their choice is remembered.
+- **Hero collage of real products** (photos pulled from the live catalog, not emoji, with a couple of bags featured).
 - **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
@@ -29,7 +30,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Most-wanted ranks** (#1, #2, #3) update live as votes come in; sort by *Most wanted* to see the leaderboard.
 - **"My votes"** view so a visitor can see everything they picked.
 - **Live hero stats** + a **trust bar** (rating · pieces sold · positive reviews).
-- **The Deluxe Vendors List** — a dedicated section selling one high-value digital product ($197), with its own checkout flow.
+- **The Deluxe Vendors List** — a dedicated section selling one digital product ($120, was $250): 15+ vetted vendors low→high tier + a reseller PDF guide, with its own checkout flow.
 - **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
 - **Optimized for iPhone / mobile**: single-column catalog, a big unmistakable **Vote** button (with a "Skip the wait" pre-order beneath it), a "How to vote" guide bar, large tap targets, and iOS-safe inputs/insets.
 - 67 real products (original catalog photos): jewelry (incl. 35 Hello Kitty Barbie ring variants) plus Hello Kitty & Bape bags.
@@ -63,9 +64,15 @@ functions.
 ### 3. Your private Host Hub (only you can see it)
 Open **`admin.html`** (host it alongside `index.html`, e.g. `yourstore.com/admin.html`, or just
 open the file). Enter your `/exec` URL and your `ADMIN_TOKEN` passcode once — it's saved to your
-device. You'll see **unique visitors, total votes, pre-orders, pre-order value, Vendors List
-sales, revenue**, a live **Most-Wanted leaderboard**, and a **recent pre-orders/sales** table
-with emails. Click **Preview with sample data** first to see it before connecting.
+device. It's organised into tabs:
+- **Overview** — unique visitors, total votes, pre-orders, pre-order value, sales, revenue, top pieces, and votes-by-category.
+- **Votes** — **every piece with its live vote count** (searchable), plus a **who-voted-&-when log** (each vote event by anonymous per-device ID).
+- **Pre-orders** — every reservation with piece, qty and email.
+- **Sales** — every Deluxe Vendors List order.
+
+Click **Preview with sample data** first to see it before connecting. Votes are funneled into
+the sheet as they happen, and the storefront also reads back **shared per-piece counts** (a
+public, safe endpoint) so everyone sees the same tallies.
 
 **Why it's private:** the backend refuses to return any stats unless the correct `ADMIN_TOKEN`
 is supplied, and only you know it. Don't link `admin.html` from the public site, and keep your
