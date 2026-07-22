@@ -860,7 +860,7 @@
     <div class="modal__body">
       <p class="note"><b style="color:var(--txt)">Prices are marked up.</b> The prices you see cover our sourcing &amp; handling costs — the original vendor prices are <b style="color:var(--txt)">lower</b>. Want the direct sources for yourself? They're all in the <b style="color:var(--pink)">Deluxe Vendors List</b>.</p>
       <p class="note"><b style="color:var(--txt)">About the photos.</b> Some product images are <b style="color:var(--txt)">stock photos from our vendors</b> and were not taken by Spoiled &amp; Iced.</p>
-      <button class="btn btn--acid" id="discVendors" style="width:100%;justify-content:center;margin-top:4px">🔓 See the Deluxe Vendors List →</button>
+      <button class="btn btn--acid" id="discVendors" style="width:100%;justify-content:center;margin-top:4px">🔓 Get the Deluxe Vendors List →</button>
       <button class="disc-continue" id="discContinue">Got it — continue to the store</button>
     </div>
   </div>
@@ -1447,7 +1447,7 @@
     d.classList.add("open"); document.body.style.overflow="hidden";
     byId("discClose").addEventListener("click", closeDisc);
     byId("discContinue").addEventListener("click", closeDisc);
-    byId("discVendors").addEventListener("click", function(){ closeDisc(); var v=byId("vendors"); if(v) v.scrollIntoView({behavior:"smooth"}); });
+    byId("discVendors").addEventListener("click", function(){ closeDisc(); openVendorsCheckout(); });
     d.addEventListener("click", function(e){ if(e.target===d) closeDisc(); });
     document.addEventListener("keydown", function(e){ if(e.key==="Escape" && d.classList.contains("open")) closeDisc(); });
   }
