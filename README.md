@@ -34,19 +34,46 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - 54 real products (original catalog photos), including 35 individual Hello Kitty Barbie ring variants.
 - Fully responsive, dark girly liquid-chrome design, respects reduced-motion preferences.
 
-## Capture votes, pre-orders &amp; sales (2-minute setup)
+## Backend, auto-emails &amp; your private Host Hub (5-minute setup)
 
-Every vote, pre-order and Vendors List purchase is sent to a backend you own, so you can see
-what people want. The easiest destination is a **Google Sheet** — no server required:
+One free Google Apps Script powers everything: it logs every visit / vote / pre-order /
+purchase, **emails the customer automatically when they pre-order**, and serves **private
+stats** to your Host Hub dashboard. No server to run, no monthly cost.
 
-1. Create a Google Sheet → **Extensions ▸ Apps Script**.
-2. Paste all of [`api/capture.gs`](api/capture.gs). **Deploy ▸ New deployment ▸ Web app**,
-   *Execute as: Me*, *Who has access: Anyone*. Copy the `/exec` URL.
-3. In `index.html`, set `CONFIG.captureUrl = "your /exec URL";`
+### 1. Deploy the backend
+1. Create a **Google Sheet** → **Extensions ▸ Apps Script**. Delete the sample and paste ALL
+   of [`api/capture.gs`](api/capture.gs).
+2. Edit the three CONFIG values at the top:
+   - `ADMIN_TOKEN` — your **Host Hub passcode** (make it long; this is what keeps your numbers private).
+   - `OWNER_EMAIL` — where new-order alerts are sent.
+   - `STORE_NAME` / `STORE_URL`.
+3. **Deploy ▸ New deployment ▸ Web app** · *Execute as: Me* · *Who has access: Anyone*.
+   The first deploy asks you to **authorize Gmail sending** — allow it (that's what powers the
+   automatic emails). Copy the Web app URL (ends in `/exec`).
+4. In `index.html`, set `CONFIG.captureUrl = "your /exec URL";`
 
-Now each action appends a row (time, type, piece, category, price, voted, count, qty, email).
-Make a Pivot Table on the "Piece" column to rank the most-voted pieces. Prefer your own
-server or Supabase/Firebase? Point `captureUrl` at any endpoint that accepts a JSON `POST`.
+### 2. Automatic pre-order emails ✅
+Once deployed, this is fully automatic — the moment a visitor pre-orders, the script emails
+them a branded confirmation ("your pre-order is reserved, no charge yet…") and emails **you**
+a heads-up. Same for a Vendors List purchase. Consumer Gmail sends up to ~100 emails/day free
+(Google Workspace: ~1,500). Edit the wording in the `sendPreorderEmail_` / `sendPurchaseEmail_`
+functions.
+
+### 3. Your private Host Hub (only you can see it)
+Open **`admin.html`** (host it alongside `index.html`, e.g. `yourstore.com/admin.html`, or just
+open the file). Enter your `/exec` URL and your `ADMIN_TOKEN` passcode once — it's saved to your
+device. You'll see **unique visitors, total votes, pre-orders, pre-order value, Vendors List
+sales, revenue**, a live **Most-Wanted leaderboard**, and a **recent pre-orders/sales** table
+with emails. Click **Preview with sample data** first to see it before connecting.
+
+**Why it's private:** the backend refuses to return any stats unless the correct `ADMIN_TOKEN`
+is supplied, and only you know it. Don't link `admin.html` from the public site, and keep your
+passcode secret. (This is solid for a small store; it isn't enterprise SSO — for that you'd add
+a real auth provider.)
+
+Each sheet row is: time, type, piece, category, price, voted, count, qty, email, raw JSON.
+Prefer your own server / Supabase / Firebase? Point `captureUrl` at any endpoint that accepts a
+JSON `POST` and mirror the stats/email logic there.
 
 ## The Deluxe Vendors List (digital product)
 

@@ -1479,6 +1479,12 @@
 
   /* ---------- go ---------- */
   buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); initIntro();
+  /* count a visit once per session (feeds the private Host Hub) */
+  (function(){ try{
+    var vid = localStorage.getItem("si_vid");
+    if(!vid){ vid = "v" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem("si_vid", vid); }
+    if(!sessionStorage.getItem("si_visit")){ sessionStorage.setItem("si_visit","1"); capture("visit", { visitorId: vid, ref: (document.referrer||"").slice(0,120) }); }
+  }catch(e){} })();
 })();
 </script>
 </body>

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Spoiled &amp; Iced — Host Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+<style>
+  :root{
+    --bg-0:#0A0B0E; --bg-1:#111318; --bg-2:#181A20; --bg-3:#20232B;
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.2);
+    --txt:#ECEEF3; --txt-dim:#98A0AE; --txt-mute:#646C7C;
+    --pink:#FF3D9A; --rose:#FF7EC4; --lilac:#B98BFF; --cyan:#37D8FF; --good:#63e6a8;
+    --font-display:"Anton","Impact",sans-serif; --font-body:"Archivo",system-ui,sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+    --holo:linear-gradient(105deg,#ffd6f0,#ffa7e0 25%,#c6a7ff 55%,#ff9ecf 80%,#ffd6f0);
+  }
+  *{box-sizing:border-box}
+  body{ margin:0; font-family:var(--font-body); color:var(--txt); background:
+    radial-gradient(50vw 40vw at 85% -5%, rgba(255,126,196,.14), transparent 60%),
+    radial-gradient(45vw 45vw at 5% 5%, rgba(185,139,255,.12), transparent 62%),
+    linear-gradient(180deg,#0E0A0D,#0A0B0E); min-height:100vh; -webkit-font-smoothing:antialiased; }
+  .wrap{ width:min(1080px,92vw); margin:auto; }
+  .chrome{ background:linear-gradient(180deg,#fff,#dbe2ec 20%,#93a0b4 48%,#f2f5fa 54%,#aeb9cb 76%,#66707f 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .holo{ background:var(--holo); background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  /* topbar */
+  header{ border-bottom:1px solid var(--line); background:rgba(12,13,16,.7); backdrop-filter:blur(14px); position:sticky; top:0; z-index:10; }
+  .bar{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:16px 0; flex-wrap:wrap; }
+  .brandline{ font-family:var(--font-display); font-size:1.5rem; letter-spacing:.02em; display:flex; align-items:center; gap:.5rem; }
+  .brandline .tag{ font-family:var(--font-mono); font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; color:var(--pink); border:1px solid rgba(255,61,154,.4); padding:4px 9px; border-radius:999px; }
+  .tools{ display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:.74rem; color:var(--txt-dim); }
+  .btn{ font-family:var(--font-mono); font-weight:600; font-size:.76rem; letter-spacing:.05em; text-transform:uppercase; border-radius:999px; padding:10px 16px; cursor:pointer; border:1px solid var(--line-2); background:var(--bg-2); color:var(--txt); transition:.15s; }
+  .btn:hover{ border-color:var(--pink); color:var(--pink); }
+  .btn--pink{ background:var(--pink); color:#0A0B0E; border-color:transparent; }
+  .btn--pink:hover{ color:#0A0B0E; filter:brightness(1.06); transform:translateY(-1px); }
+
+  /* gate */
+  .gate{ min-height:78vh; display:grid; place-items:center; text-align:center; }
+  .gate__card{ width:min(440px,92vw); background:var(--bg-2); border:1px solid var(--line-2); border-radius:20px; padding:34px 30px; box-shadow:0 40px 80px -30px rgba(0,0,0,.8); position:relative; overflow:hidden; }
+  .gate__card::before{ content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--holo); background-size:200% 100%; }
+  .gate h1{ font-family:var(--font-display); font-size:2.2rem; margin:6px 0 4px; text-transform:uppercase; }
+  .gate p{ color:var(--txt-dim); font-size:.92rem; margin:0 0 20px; }
+  .lock{ font-size:2.4rem; }
+  .field{ text-align:left; margin-bottom:14px; }
+  .field label{ display:block; font-family:var(--font-mono); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:var(--txt-dim); margin-bottom:6px; }
+  .field input{ width:100%; background:var(--bg-0); border:1px solid var(--line-2); border-radius:11px; padding:13px 14px; color:var(--txt); font-family:var(--font-mono); font-size:15px; outline:none; }
+  .field input:focus{ border-color:var(--pink); }
+  .gate .btn--pink{ width:100%; justify-content:center; padding:14px; margin-top:4px; }
+  .gate .err{ color:var(--pink); font-size:.82rem; min-height:1.2em; margin:8px 0 0; }
+  .gate .alt{ margin-top:16px; font-family:var(--font-mono); font-size:.74rem; }
+  .gate .alt a{ color:var(--lilac); cursor:pointer; text-decoration:underline; }
+
+  /* dashboard */
+  .dash{ padding:28px 0 60px; display:none; }
+  .demo-note{ background:rgba(185,139,255,.12); border:1px solid rgba(185,139,255,.4); color:var(--txt); font-family:var(--font-mono); font-size:.78rem; padding:10px 14px; border-radius:12px; margin-bottom:20px; }
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:26px; }
+  .stat{ background:var(--bg-2); border:1px solid var(--line); border-radius:16px; padding:20px; position:relative; overflow:hidden; }
+  .stat .lbl{ font-family:var(--font-mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--txt-mute); }
+  .stat .num{ font-family:var(--font-display); font-size:2.6rem; line-height:1; margin-top:8px; }
+  .stat .sub{ font-family:var(--font-mono); font-size:.7rem; color:var(--txt-dim); margin-top:6px; }
+  .stat.accent .num{ color:var(--pink); } .stat.money .num{ color:var(--good); } .stat.cool .num{ color:var(--lilac); }
+
+  .grid2{ display:grid; grid-template-columns:1.1fr 1.4fr; gap:18px; }
+  .panel{ background:var(--bg-2); border:1px solid var(--line); border-radius:18px; padding:20px 22px; }
+  .panel h2{ font-family:var(--font-display); font-size:1.3rem; text-transform:uppercase; margin:0 0 14px; }
+  .rank{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .rank:last-child{ border-bottom:none; }
+  .rank .pos{ font-family:var(--font-display); font-size:1.2rem; color:var(--pink); width:34px; }
+  .rank .nm{ flex:1; font-size:.92rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank .barwrap{ flex:1.2; height:8px; background:var(--bg-0); border-radius:999px; overflow:hidden; border:1px solid var(--line); }
+  .rank .bar{ height:100%; background:var(--holo); background-size:220% 100%; border-radius:999px; }
+  .rank .v{ font-family:var(--font-mono); font-size:.82rem; color:var(--txt); width:42px; text-align:right; }
+  table{ width:100%; border-collapse:collapse; font-size:.86rem; }
+  th{ text-align:left; font-family:var(--font-mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--txt-mute); padding:8px 8px; border-bottom:1px solid var(--line-2); }
+  td{ padding:10px 8px; border-bottom:1px solid var(--line); color:var(--txt-dim); }
+  td b{ color:var(--txt); }
+  .tablewrap{ overflow-x:auto; }
+  .empty{ color:var(--txt-mute); font-family:var(--font-mono); font-size:.82rem; padding:14px 0; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+</style>
+
+<header>
+  <div class="wrap bar">
+    <div class="brandline"><span class="chrome">SPOILED &amp; ICED</span> <span class="tag">Host Hub</span></div>
+    <div class="tools" id="tools" style="display:none">
+      <span id="updated"></span>
+      <button class="btn" id="refresh">↻ Refresh</button>
+      <button class="btn" id="signout">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<!-- gate -->
+<section class="gate wrap" id="gate">
+  <div class="gate__card">
+    <div class="lock">🔐</div>
+    <h1>Host Hub</h1>
+    <p>Private dashboard. Enter your endpoint and passcode to view your numbers.</p>
+    <div class="field"><label for="endpoint">Backend URL (Apps Script /exec)</label><input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" /></div>
+    <div class="field"><label for="passcode">Passcode</label><input id="passcode" type="password" placeholder="your secret passcode" autocomplete="off" /></div>
+    <div class="err" id="gateErr"></div>
+    <button class="btn--pink btn" id="connect">Unlock hub</button>
+    <div class="alt">No backend yet? <a id="demo">Preview with sample data →</a></div>
+  </div>
+</section>
+
+<!-- dashboard -->
+<section class="dash wrap" id="dash">
+  <div class="demo-note" id="demoNote" style="display:none">👀 Sample data preview — connect your backend (URL + passcode) to see live numbers.</div>
+  <div class="stats" id="statCards"></div>
+  <div class="grid2">
+    <div class="panel">
+      <h2>Most wanted</h2>
+      <div id="leaderboard"></div>
+    </div>
+    <div class="panel">
+      <h2>Recent pre-orders &amp; sales</h2>
+      <div class="tablewrap">
+        <table><thead><tr><th>When</th><th>Type</th><th>Piece</th><th>Qty</th><th>Email</th></tr></thead>
+        <tbody id="recent"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var LS = "si_admin_cfg";
+  var $ = function(id){ return document.getElementById(id); };
+  var cfg = null;
+  try { cfg = JSON.parse(localStorage.getItem(LS)); } catch(e){}
+
+  function jsonp(base, params){
+    return new Promise(function(resolve, reject){
+      var cb = "cb_" + Date.now() + Math.floor(Math.random()*1e4);
+      params.callback = cb;
+      var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+"="+encodeURIComponent(params[k]); }).join("&");
+      var s = document.createElement("script");
+      var to = setTimeout(function(){ cleanup(); reject(new Error("timeout")); }, 15000);
+      function cleanup(){ clearTimeout(to); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.remove(); }
+      window[cb] = function(data){ cleanup(); resolve(data); };
+      s.onerror = function(){ cleanup(); reject(new Error("network")); };
+      s.src = base + (base.indexOf("?")>-1?"&":"?") + qs;
+      document.body.appendChild(s);
+    });
+  }
+
+  function money(n){ return "$" + (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function num(n){ return (Number(n)||0).toLocaleString(); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function when(t){ try{ var d=new Date(t); return (d.getMonth()+1)+"/"+d.getDate()+" "+d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); }catch(e){ return esc(t); } }
+
+  function render(d){
+    $("statCards").innerHTML = [
+      card("Unique visitors", num(d.uniqueVisitors), num(d.totalVisits)+" total visits", "accent"),
+      card("Votes cast", num(d.totalVotes), "across the catalog", ""),
+      card("Pre-orders", num(d.preorders), "reserved pieces", "cool"),
+      card("Pre-order value", money(d.preRevenue), "if all convert", "money"),
+      card("Vendors List sales", num(d.purchases), "digital product", "cool"),
+      card("Revenue", money(d.revenue), "pre-orders + sales", "money")
+    ].join("");
+
+    var top = d.topPieces || [];
+    var max = top.reduce(function(m,x){ return Math.max(m, x.votes); }, 1);
+    $("leaderboard").innerHTML = top.length ? top.map(function(x,i){
+      return '<div class="rank"><span class="pos">'+(i+1)+'</span><span class="nm">'+esc(x.name)+'</span>'+
+        '<span class="barwrap"><span class="bar" style="width:'+Math.max(6,Math.round(x.votes/max*100))+'%"></span></span>'+
+        '<span class="v">'+num(x.votes)+'</span></div>';
+    }).join("") : '<div class="empty">No votes yet.</div>';
+
+    var rec = d.recent || [];
+    $("recent").innerHTML = rec.length ? rec.map(function(r){
+      return "<tr><td>"+when(r[0])+"</td><td><b>"+esc(r[1])+"</b></td><td>"+esc(r[2])+"</td><td>"+esc(r[3])+"</td><td>"+esc(r[4])+"</td></tr>";
+    }).join("") : '<tr><td colspan="5" class="empty">No pre-orders or sales yet.</td></tr>';
+
+    $("updated").textContent = "Updated " + when(d.generated || Date.now());
+  }
+  function card(lbl, big, sub, cls){
+    return '<div class="stat '+cls+'"><div class="lbl">'+lbl+'</div><div class="num">'+big+'</div><div class="sub">'+sub+'</div></div>';
+  }
+
+  function showDash(demo){
+    $("gate").style.display="none"; $("dash").style.display="block"; $("tools").style.display="flex";
+    $("demoNote").style.display = demo ? "block" : "none";
+  }
+
+  function load(){
+    if(!cfg || !cfg.endpoint || !cfg.token) return;
+    $("refresh").textContent = "…";
+    jsonp(cfg.endpoint, { action:"stats", token:cfg.token }).then(function(d){
+      $("refresh").textContent = "↻ Refresh";
+      if(!d || d.error){ signout("Wrong passcode or URL — check both and try again."); return; }
+      showDash(false); render(d);
+    }).catch(function(){ $("refresh").textContent="↻ Refresh"; showDash(false); alert("Couldn't reach the backend. Check the URL is your Apps Script /exec link."); });
+  }
+
+  function signout(msg){
+    localStorage.removeItem(LS); cfg=null;
+    $("dash").style.display="none"; $("tools").style.display="none"; $("gate").style.display="grid";
+    if(msg){ $("gateErr").textContent=msg; }
+  }
+
+  // sample data for preview
+  function sample(){
+    return { generated:new Date().toISOString(), uniqueVisitors:1284, totalVisits:3106, totalVotes:2571,
+      preorders:38, preRevenue:1512.40, purchases:6, purRevenue:1182, revenue:2694.40,
+      topPieces:[{name:"Hello Kitty Shoulder Bag",votes:134},{name:"Iced Heart Pendant",votes:118},{name:"Bape Shark Backpack",votes:103},{name:"Iced Tennis Bracelet",votes:91},{name:"Iced Butterfly Ring",votes:82},{name:"Iced Hoop Earrings",votes:79},{name:"Kitty Bow Choker",votes:74}],
+      recent:[[Date.now(),"Pre-order","Iced Heart Pendant",1,"jenna@email.com"],[Date.now()-3600000,"Vendors List","Deluxe Vendors List",1,"reseller@email.com"],[Date.now()-7200000,"Pre-order","Hello Kitty Shoulder Bag",2,"mia@email.com"],[Date.now()-90000000,"Pre-order","Bape Shark Backpack",1,"drew@email.com"]] };
+  }
+
+  /* wire */
+  $("connect").addEventListener("click", function(){
+    var endpoint = $("endpoint").value.trim(), token = $("passcode").value.trim();
+    if(!/^https:\/\/script\.google\.com\/.*\/exec$/.test(endpoint)){ $("gateErr").textContent="Enter your Apps Script Web App URL (ends in /exec)."; return; }
+    if(!token){ $("gateErr").textContent="Enter your passcode."; return; }
+    cfg = { endpoint:endpoint, token:token };
+    localStorage.setItem(LS, JSON.stringify(cfg));
+    $("gateErr").textContent="";
+    load();
+  });
+  $("passcode").addEventListener("keydown", function(e){ if(e.key==="Enter") $("connect").click(); });
+  $("demo").addEventListener("click", function(){ showDash(true); render(sample()); });
+  $("refresh").addEventListener("click", load);
+  $("signout").addEventListener("click", function(){ signout(""); });
+
+  // auto-open if already configured
+  if(cfg && cfg.endpoint && cfg.token){ $("endpoint").value=cfg.endpoint; load(); }
+})();
+</script>
+</body>
+</html>
