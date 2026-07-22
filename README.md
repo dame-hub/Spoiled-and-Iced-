@@ -28,8 +28,8 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Live hero stats** + a **trust bar** (rating · pieces sold · positive reviews).
 - **The Deluxe Vendors List** — a dedicated section selling one high-value digital product ($197), with its own checkout flow.
 - **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
-- Product photos are **evened out onto uniform dark tiles** (light/grey backgrounds removed) for a consistent, professional grid.
-- 54 real products, including 35 individual Hello Kitty Barbie ring variants.
+- **Optimized for iPhone / mobile**: single-column catalog, a big unmistakable **Vote** button (with a "Skip the wait" pre-order beneath it), a "How to vote" guide bar, large tap targets, and iOS-safe inputs/insets.
+- 54 real products (original catalog photos), including 35 individual Hello Kitty Barbie ring variants.
 - Fully responsive, dark girly liquid-chrome design, respects reduced-motion preferences.
 
 ## Capture votes, pre-orders &amp; sales (2-minute setup)
