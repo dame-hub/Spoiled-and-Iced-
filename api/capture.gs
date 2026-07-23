@@ -85,7 +85,7 @@ function computeCounts_() {
 /* full dashboard data (private) */
 function computeStats_() {
   var rows = ensureSheet_().getDataRange().getValues();
-  var visits = 0, uniq = {}, totalVotes = 0, net = {}, cat = {},
+  var visits = 0, uniq = {}, totalVotes = 0, net = {}, cat = {}, rs = {},
       preorders = 0, preRev = 0, purchases = 0, purRev = 0,
       voteLog = [], preList = [], salesList = [];
   for (var i = 1; i < rows.length; i++) {
@@ -97,9 +97,19 @@ function computeStats_() {
       else if (voted === "removed") { net[name] = (net[name] || 0) - 1; cat[c] = (cat[c] || 0) - 1; }
       voteLog.push([r[0], name, c, voted, vid]);
     }
-    else if (type === "preorder") { preorders++; preRev += price * qty; preList.push([r[0], name, qty, email]); }
+    else if (type === "ringsize") {
+      if (voted === "yes") rs[name] = (rs[name] || 0) + 1;
+      else if (voted === "removed") rs[name] = (rs[name] || 0) - 1;
+    }
+    else if (type === "preorder") {
+      preorders++; preRev += price * qty;
+      var psize = ""; try { psize = (JSON.parse(r[10]) || {}).size || ""; } catch (er) {}
+      preList.push([r[0], name, qty, email, psize]);
+    }
     else if (type === "purchase") { purchases++; purRev += price * qty; salesList.push([r[0], name, email, price]); }
   }
+  var SZORDER = ["5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10"];
+  var ringSizes = SZORDER.filter(function (s) { return rs[s]; }).map(function (s) { return { size: s, votes: rs[s] }; });
   var pieces = Object.keys(net).map(function (k) { return { name: k, votes: net[k] }; })
     .sort(function (a, b) { return b.votes - a.votes; });
   var cats = Object.keys(cat).map(function (k) { return { cat: k, votes: cat[k] }; })
@@ -109,7 +119,7 @@ function computeStats_() {
     uniqueVisitors: Object.keys(uniq).length, totalVisits: visits,
     totalVotes: totalVotes, preorders: preorders, preRevenue: round2_(preRev),
     purchases: purchases, purRevenue: round2_(purRev), revenue: round2_(preRev + purRev),
-    pieces: pieces, cats: cats,
+    pieces: pieces, cats: cats, ringSizes: ringSizes,
     voteLog: voteLog.slice(-250).reverse(),
     preList: preList.slice(-100).reverse(),
     salesList: salesList.slice(-100).reverse()

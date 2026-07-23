@@ -21,11 +21,14 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Disclaimer pop-up** (shown on every visit): prices are marked up over vendor cost, some photos are stock vendor images, with an X to close and a button through to the Deluxe Vendors List.
 - **Light / dark theme toggle** in the header — visitors pick the bubblegum-light look (default, matches the store) or the dark liquid-chrome look; their choice is remembered.
 - **Hero collage of real products** (photos pulled from the live catalog, not emoji, with a couple of bags featured).
+- **Ring-size poll** pinned to the very top of the site: visitors tap their size (5–10, half sizes included) so you stock the sizes people actually wear. One vote per device (change it anytime), a live bar + count on each size, a crown on the most-wanted size, and it feeds the Host Hub's **Ring Size Demand** panel.
 - **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
   drop reserves it (quantity + email) — no charge now, they're first in line when it lands.
+  Ring pre-orders add a **ring-size picker** (pre-filled from the visitor's size-poll pick),
+  and the chosen size flows into the reservation, the confirmation email and the Host Hub.
   A **Reserved** counter in the header opens their list of pre-orders.
 - **Most-wanted ranks** (#1, #2, #3) update live as votes come in; sort by *Most wanted* to see the leaderboard.
 - **"My votes"** view so a visitor can see everything they picked.

@@ -246,7 +246,30 @@
   .btn--ghost:hover{ transform:translateY(-2px); border-color:var(--pink); color:var(--pink); }
 
   /* ---------- hero ---------- */
-  .hero{ padding:66px 0 46px; }
+  /* ---------- ring-size poll ---------- */
+  .sizepoll{ padding:24px 0 0; }
+  .sizepoll__card{ background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; box-shadow:0 20px 45px -30px rgba(120,40,110,.5); position:relative; overflow:hidden; }
+  .sizepoll__card::before{ content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--holo); background-size:200% 100%; }
+  .sizepoll__head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:14px; }
+  .sizepoll__head h2{ font-family:var(--font-display); font-size:clamp(1.4rem,3vw,2rem); text-transform:uppercase; margin:8px 0 4px; }
+  .sizepoll__head p{ color:var(--txt-dim); font-size:.92rem; margin:0; max-width:46ch; }
+  .sizepoll__lead{ font-family:var(--font-mono); font-size:.74rem; letter-spacing:.04em; text-transform:uppercase; color:var(--txt-dim); background:var(--bg-3); border:1px solid var(--line); border-radius:999px; padding:8px 14px; white-space:nowrap; }
+  .sizepoll__lead b{ color:var(--pink); }
+  .sizepoll__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); gap:10px; }
+  .sizechip{ position:relative; overflow:hidden; border:1.5px solid var(--line-2); background:var(--bg-3); border-radius:14px; padding:12px 6px 10px; cursor:pointer; text-align:center; transition:transform .12s ease, border-color .2s, background .2s; }
+  .sizechip:hover{ border-color:var(--pink); transform:translateY(-2px); }
+  .sizechip .fill{ position:absolute; left:0; bottom:0; width:100%; background:linear-gradient(180deg, rgba(232,87,155,.16), rgba(232,87,155,.30)); z-index:0; transition:height .5s cubic-bezier(.2,.7,.2,1); }
+  .sizechip .sz{ position:relative; z-index:1; font-family:var(--font-display); font-size:1.35rem; line-height:1; }
+  .sizechip .ct{ position:relative; z-index:1; display:block; font-family:var(--font-mono); font-size:.66rem; color:var(--txt-dim); margin-top:5px; }
+  .sizechip.mine{ border-color:transparent; background:var(--pink); }
+  .sizechip.mine .sz, .sizechip.mine .ct{ color:#fff; }
+  .sizechip.mine .fill{ display:none; }
+  .sizechip .crown{ position:absolute; top:5px; right:7px; z-index:1; font-size:.7rem; }
+  .sizepoll__note{ font-family:var(--font-mono); font-size:.7rem; letter-spacing:.03em; color:var(--txt-mute); margin-top:12px; }
+  :root[data-theme="dark"] .sizechip .fill{ background:linear-gradient(180deg, rgba(255,61,154,.18), rgba(255,61,154,.34)); }
+  :root[data-theme="dark"] .sizechip.mine .sz, :root[data-theme="dark"] .sizechip.mine .ct{ color:#0A0B0E; }
+
+  .hero{ padding:34px 0 46px; }
   .hero__grid{ display:grid; grid-template-columns:1.12fr .88fr; gap:3rem; align-items:center; }
   .drop-badge{
     display:inline-flex; align-items:center; gap:.55rem;
@@ -490,6 +513,9 @@
     transition:border-color .2s;
   }
   .field input:focus{ border-color:var(--pink); }
+  .po-select{ width:100%; background:var(--bg-0); border:1px solid var(--line-2); border-radius:11px; padding:12px 14px; color:var(--txt); font-family:var(--font-body); font-size:16px; outline:none; cursor:pointer; transition:border-color .2s; appearance:none; -webkit-appearance:none; }
+  .po-select:focus{ border-color:var(--pink); }
+  .po-hint{ font-family:var(--font-mono); font-size:.66rem; color:var(--txt-mute); margin-top:6px; }
   .field .err{ color:var(--magenta); font-size:.78rem; margin-top:6px; display:none; }
   .field.invalid .err{ display:block; }
   .field.invalid input{ border-color:var(--magenta); }
@@ -709,6 +735,22 @@
 </header>
 
 <a id="top"></a>
+
+<!-- ===== ring-size poll ===== -->
+<section class="sizepoll" id="sizepoll">
+  <div class="wrap sizepoll__card">
+    <div class="sizepoll__head">
+      <div>
+        <span class="kicker">💍 Ring size poll</span>
+        <h2>What's your ring size?</h2>
+        <p>Vote your size so we stock enough of the sizes people actually wear.</p>
+      </div>
+      <div class="sizepoll__lead" id="sizeLead"></div>
+    </div>
+    <div class="sizepoll__grid" id="sizeGrid" role="group" aria-label="Vote your ring size"></div>
+    <div class="sizepoll__note" id="sizeNote">Tap your size — one vote per device, change it anytime.</div>
+  </div>
+</section>
 
 <!-- ===== hero ===== -->
 <section class="hero">
@@ -1259,6 +1301,15 @@
 
   function openPreorder(p) {
     var cat = CATS[p.cat] || { label: p.cat, emoji: "✨", glow: "#8892a5" };
+    var isRing = p.cat === "rings";
+    var sizeField = isRing ? (
+      '<div class="field"><label for="poSize">Ring size</label>' +
+        '<select id="poSize" class="po-select" aria-label="Ring size">' +
+        RING_SIZES.map(function (s) { return '<option value="' + s + '"' + (mySize === s ? " selected" : "") + '>Size ' + s + '</option>'; }).join("") +
+        '</select>' +
+        (mySize ? '<div class="po-hint">Pre-filled from your size poll pick — change if needed.</div>' : '') +
+      "</div>"
+    ) : "";
     openModal("Skip the wait", "Pre-order");
     modalBody.innerHTML =
       '<div class="po-item">' +
@@ -1270,6 +1321,7 @@
         '<div class="stepper"><button type="button" id="qMinus" aria-label="Decrease">−</button>' +
         '<input type="number" id="qInput" value="1" min="1" max="99" aria-label="Quantity" />' +
         '<button type="button" id="qPlus" aria-label="Increase">+</button></div></div>' +
+      sizeField +
       '<div class="field" id="emailField"><label for="poEmail">Email — we\'ll ping you the second it drops</label>' +
         '<input type="email" id="poEmail" placeholder="you@email.com" autocomplete="email" />' +
         '<div class="err">Enter a valid email so we can reach you.</div></div>' +
@@ -1290,18 +1342,19 @@
     var email = (emailEl.value || "").trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { byId("emailField").classList.add("invalid"); emailEl.focus(); return; }
     var qty = Math.max(1, Math.min(99, parseInt(q.value, 10) || 1));
+    var se = byId("poSize"); var size = se ? se.value : null;
 
     /* ---- HOOK: send to Shopify checkout / your backend / email here ---- */
-    reservations.push({ id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, email: email, at: Date.now() });
+    reservations.push({ id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email, at: Date.now() });
     save(LS_PRE, reservations);
-    capture("preorder", { id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, email: email });
+    capture("preorder", { id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email });
     updatePills();
 
     modalEyebrow.textContent = "You're in line"; modalTitle.textContent = "Reserved";
     modalBody.innerHTML =
       '<div class="po-success"><div class="big">⚡</div>' +
       '<h3>You skipped the wait</h3>' +
-      '<p>' + esc(p.name) + ' ×' + qty + ' is reserved. We\'ll email <b>' + esc(email) + '</b> the moment it\'s ready to check out — no charge until then.</p>' +
+      '<p>' + esc(p.name) + ' ×' + qty + (size ? ' · size ' + esc(size) : '') + ' is reserved. We\'ll email <b>' + esc(email) + '</b> the moment it\'s ready to check out — no charge until then.</p>' +
       '<button class="btn btn--acid" id="poDone">Keep voting →</button></div>';
     byId("poDone").addEventListener("click", closeModal);
     confetti();
@@ -1317,7 +1370,7 @@
     var rows = reservations.map(function (r, i) {
       var cat = CATS[r.cat] || { emoji: "✨", glow: "#8892a5", label: r.cat };
       return '<div class="res-row"><div class="thumb" style="background:radial-gradient(120% 120% at 50% 0%,' + cat.glow + '44,transparent),var(--bg-0)">' + cat.emoji + "</div>" +
-        '<div class="meta"><h4>' + esc(r.name) + " ×" + r.qty + "</h4><small>" + esc(cat.label) + " · $" + Number(r.price).toFixed(2) + "</small></div>" +
+        '<div class="meta"><h4>' + esc(r.name) + " ×" + r.qty + "</h4><small>" + esc(cat.label) + (r.size ? " · size " + esc(r.size) : "") + " · $" + Number(r.price).toFixed(2) + "</small></div>" +
         '<button class="rm" data-i="' + i + '">Remove</button></div>';
     }).join("");
     modalBody.innerHTML = '<div class="res-list">' + rows + "</div>" +
@@ -1614,8 +1667,44 @@
     document.addEventListener("keydown", function h(e) { finish(); document.removeEventListener("keydown", h); });
   }
 
+  /* ---------- ring-size poll ---------- */
+  var RING_SIZES = ["5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10"];
+  var SIZE_BASE = { "5":34,"5.5":41,"6":78,"6.5":66,"7":112,"7.5":74,"8":69,"8.5":38,"9":52,"9.5":21,"10":29 };
+  var mySize = null;
+  try { mySize = localStorage.getItem("si_ring_size"); } catch (e) {}
+  function sizeCount(s) { return (SIZE_BASE[s] || 0) + (mySize === s ? 1 : 0); }
+  function leadSize() {
+    var best = null, bv = -1;
+    RING_SIZES.forEach(function (s) { var c = sizeCount(s); if (c > bv) { bv = c; best = s; } });
+    return best;
+  }
+  function renderSizePoll() {
+    var grid = byId("sizeGrid"); if (!grid) return;
+    var max = RING_SIZES.reduce(function (m, s) { return Math.max(m, sizeCount(s)); }, 1);
+    var lead = leadSize();
+    grid.innerHTML = RING_SIZES.map(function (s) {
+      var c = sizeCount(s), h = Math.round(c / max * 100);
+      return '<button class="sizechip' + (mySize === s ? " mine" : "") + '" data-size="' + s + '" aria-pressed="' + (mySize === s ? "true" : "false") + '">' +
+        '<span class="fill" style="height:' + h + '%"></span>' +
+        (s === lead ? '<span class="crown">👑</span>' : '') +
+        '<span class="sz">' + s + '</span><span class="ct">' + c.toLocaleString() + '</span></button>';
+    }).join("");
+    grid.querySelectorAll(".sizechip").forEach(function (b) {
+      b.addEventListener("click", function () { voteSize(b.getAttribute("data-size")); });
+    });
+    var leadEl = byId("sizeLead");
+    if (leadEl) leadEl.innerHTML = mySize ? ("Your size: <b>" + esc(mySize) + "</b>") : ("Most wanted: <b>" + esc(lead) + "</b>");
+  }
+  function voteSize(s) {
+    if (mySize === s) { mySize = null; capture("ringsize", { name: s, size: s, voted: false }); }
+    else { var prev = mySize; mySize = s; capture("ringsize", { name: s, size: s, voted: true, prev: prev }); }
+    try { if (mySize) localStorage.setItem("si_ring_size", mySize); else localStorage.removeItem("si_ring_size"); } catch (e) {}
+    renderSizePoll();
+    toast(mySize ? ("Size " + mySize + " — got it 💍") : "Size vote removed");
+  }
+
   /* ---------- go ---------- */
-  buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); hydrateVoteCounts(); initIntro();
+  buildChips(); render(); buildShowcase(); initStatsAnimation(); hydrateFromApi(); hydrateVoteCounts(); renderSizePoll(); initIntro();
   /* count a visit once per session (feeds the private Host Hub) */
   (function(){ try{
     if(!sessionStorage.getItem("si_visit")){ sessionStorage.setItem("si_visit","1"); capture("visit", { ref: (document.referrer||"").slice(0,120) }); }
