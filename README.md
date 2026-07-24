@@ -94,6 +94,10 @@ instant access" button then sends buyers straight there. Left blank, it opens a 
 modal that captures the buyer's email (logged via `captureUrl`) and promises the payment
 link + download by email. Edit the price/copy in the `.vendors` section of `index.html`.
 
+**Full Stripe setup (Payments + Tax + Invoicing)** — including a Payment Link for this
+product, automatic sales tax, and one-click Stripe invoices for pre-orders straight from
+the Google Sheet — is in **[STRIPE.md](STRIPE.md)**.
+
 ## Your logo &amp; the intro
 
 The real logo is embedded as a transparent image in the `--logo` CSS variable at the top of

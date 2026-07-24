@@ -31,7 +31,8 @@ function ensureSheet_() {
   var sh = ss.getSheetByName(SHEET) || ss.insertSheet(SHEET);
   if (sh.getLastRow() === 0) {
     sh.appendRow(["Received", "Type", "Piece / Product", "Category",
-                  "Price", "Voted", "Vote count", "Qty", "Email", "Voter ID", "Raw JSON"]);
+                  "Price", "Voted", "Vote count", "Qty", "Email", "Voter ID", "Raw JSON",
+                  "Stripe invoice"]);
     sh.setFrozenRows(1);
   }
   return sh;
@@ -163,6 +164,100 @@ function emailShell_(title, body) {
     "<p style='text-align:center;color:#b8b0c0;font-size:12px;margin:14px 0'>You run the buy. 🩷</p></div>";
 }
 function escHtml_(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+/* =================================================================
+ * STRIPE INVOICING — bill a pre-order when the drop lands (STRIPE.md)
+ * =================================================================
+ * Setup (one time):
+ *   1. Stripe Dashboard ▸ Developers ▸ API keys ▸ Create RESTRICTED key
+ *      with only: Customers = Write, Invoices = Write. (Use rk_..., never sk_.)
+ *   2. Apps Script ▸ Project Settings ▸ Script properties ▸ add
+ *      STRIPE_KEY = rk_...   (never paste the key into this file or git)
+ *   3. Reload the Google Sheet — a "💎 Spoiled & Iced" menu appears.
+ * Use: click any pre-order row ▸ menu ▸ "Send Stripe invoice for selected row".
+ * The customer gets a Stripe-hosted "Pay this invoice" email (card, wallets,
+ * etc. chosen dynamically — we never restrict payment_method_types).
+ *
+ * TAX: choosing "Yes" applies Stripe automatic tax. Two things must be true
+ * or Stripe silently collects $0 tax: (a) you have an ACTIVE registration in
+ * the customer's jurisdiction (Dashboard ▸ Tax ▸ Registrations), and (b) the
+ * customer has an address saved in Stripe (Dashboard ▸ Customers) — invoices
+ * can't calculate tax from email alone.
+ */
+var STRIPE_API_VERSION = "2026-06-24.dahlia";
+
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu("💎 Spoiled & Iced")
+    .addItem("Send Stripe invoice for selected row", "sendStripeInvoiceForSelectedRow")
+    .addToUi();
+}
+
+function sendStripeInvoiceForSelectedRow() {
+  var ui = SpreadsheetApp.getUi();
+  var sh = SpreadsheetApp.getActiveSheet();
+  if (sh.getName() !== SHEET) { ui.alert("Open the '" + SHEET + "' sheet and select a pre-order row first."); return; }
+  var row = sh.getActiveRange().getRow();
+  if (row < 2) { ui.alert("Select a pre-order row (not the header)."); return; }
+  var r = sh.getRange(row, 1, 1, 12).getValues()[0];
+  if (r[1] !== "preorder") { ui.alert("That row is a \"" + r[1] + "\" — pick a pre-order row."); return; }
+  if (!r[8]) { ui.alert("This row has no customer email."); return; }
+  if (r[11]) { ui.alert("Already invoiced (" + r[11] + "). Clear the 'Stripe invoice' cell to re-send."); return; }
+  var name = r[2] || "Pre-ordered piece", price = Number(r[4]) || 0,
+      qty = Number(r[7]) || 1, email = r[8], size = "";
+  try { size = (JSON.parse(r[10]) || {}).size || ""; } catch (e) {}
+  if (!price) { ui.alert("This row has no price — fill in the Price column first."); return; }
+
+  var label = name + " ×" + qty + (size ? " · ring size " + size : "");
+  var tax = ui.alert("Send Stripe invoice",
+    "Invoice " + email + " for:\n\n" + label + " — $" + (price * qty).toFixed(2) +
+    "\n\nApply automatic tax?\n(Yes needs an active Stripe Tax registration AND this " +
+    "customer's address saved in Stripe, or the invoice will fail / collect $0 tax.)",
+    ui.ButtonSet.YES_NO_CANCEL);
+  if (tax === ui.Button.CANCEL || tax === ui.Button.CLOSE) return;
+
+  try {
+    var found = stripe_("get", "/v1/customers?email=" + encodeURIComponent(email) + "&limit=1");
+    var customer = (found.data && found.data[0]) || stripe_("post", "/v1/customers", { email: email });
+    var params = {
+      customer: customer.id,
+      collection_method: "send_invoice",   // emails a hosted pay page — no card data touches us
+      days_until_due: "7",
+      auto_advance: "false",
+      description: "Your " + STORE_NAME + " pre-order is ready 🩷"
+    };
+    if (tax === ui.Button.YES) params["automatic_tax[enabled]"] = "true";
+    var invoice = stripe_("post", "/v1/invoices", params);
+    stripe_("post", "/v1/invoiceitems", {
+      customer: customer.id, invoice: invoice.id, currency: "usd",
+      amount: String(Math.round(price * 100) * qty), description: label
+    });
+    stripe_("post", "/v1/invoices/" + invoice.id + "/send", {});
+    sh.getRange(row, 12).setValue(invoice.id);
+    ui.alert("Invoice sent ✅", email + " just got a Stripe email with a hosted \"Pay this invoice\" page.\nInvoice: " + invoice.id, ui.ButtonSet.OK);
+  } catch (err) {
+    var msg = String((err && err.message) || err);
+    if (msg.indexOf("tax") > -1 && msg.toLowerCase().indexOf("location") > -1)
+      msg += "\n\nFix: add this customer's address in Stripe (Dashboard ▸ Customers ▸ " + email +
+             "), or re-run and answer \"No\" to automatic tax.";
+    ui.alert("Stripe error", msg, ui.ButtonSet.OK);
+  }
+}
+
+/* Minimal Stripe REST helper (form-encoded, restricted key from Script properties). */
+function stripe_(method, path, params) {
+  var key = PropertiesService.getScriptProperties().getProperty("STRIPE_KEY");
+  if (!key) throw new Error("Missing STRIPE_KEY. Apps Script ▸ Project Settings ▸ Script properties ▸ add STRIPE_KEY with a restricted key (rk_...).");
+  var opts = {
+    method: method, muteHttpExceptions: true,
+    headers: { Authorization: "Bearer " + key, "Stripe-Version": STRIPE_API_VERSION }
+  };
+  if (params && method !== "get") opts.payload = params;
+  var res = UrlFetchApp.fetch("https://api.stripe.com" + path, opts);
+  var body = {};
+  try { body = JSON.parse(res.getContentText()); } catch (e) {}
+  if (res.getResponseCode() >= 300) throw new Error((body.error && body.error.message) || ("Stripe error " + res.getResponseCode()));
+  return body;
+}
 
 /* ---------- responses ---------- */
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }

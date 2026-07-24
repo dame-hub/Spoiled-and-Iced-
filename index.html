@@ -961,8 +961,10 @@
     // Paste your deployed capture endpoint (Google Apps Script Web App URL — see
     // api/capture.gs + README). Every vote, pre-order and purchase is POSTed here.
     captureUrl: "",
-    // Optional: a real payment link (Stripe / Shopify / Gumroad) for the Vendors List.
-    // If set, "Get instant access" sends the buyer straight to checkout.
+    // Optional: your Stripe Payment Link for the Vendors List (Dashboard ▸ Payment
+    // Links — see STRIPE.md). If set, "Get instant access" sends the buyer straight
+    // to Stripe checkout. Turn on "Collect tax automatically" on the link once
+    // Stripe Tax is active. (A Shopify / Gumroad checkout URL works here too.)
     vendorsCheckoutUrl: ""
   };
 
