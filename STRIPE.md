@@ -66,10 +66,12 @@ written into the sheet row). The confirmation email tells them the invoice is
 coming. If `STRIPE_KEY` isn't set yet, pre-orders still log and email — you
 just invoice manually later with the Sheet menu below.
 
-> Automatic invoices are sent **without automatic tax**: an emailed invoice
-> can't calculate tax from an email address alone (no customer address). To
-> collect tax on an invoice, add the customer's address in Stripe first and
-> use the manual menu with "Yes" to tax — or build tax into your prices.
+> **Tax on automatic invoices:** the pre-order form collects the customer's
+> shipping address and the backend saves it to the Stripe customer, so taxed
+> invoices are possible. They stay **untaxed by default** — once your Stripe
+> Tax registration is active, add Script property `AUTO_TAX` = `yes` to turn
+> tax on. If a taxed invoice ever fails, it automatically retries untaxed so
+> the customer always gets billed.
 
 **One-time setup**
 
@@ -119,7 +121,8 @@ just invoice manually later with the Sheet menu below.
 
 ## Security rules this setup follows
 
-- **Restricted key (`rk_`), least privilege** — only Customers + Invoices write.
+- **Restricted key (`rk_`), least privilege** — only Customers, Invoices,
+  Products and Payment Links write; nothing else.
 - **No keys in code or git** — the key lives in Apps Script Script properties
   (Google's server-side store). If a key ever leaks: Dashboard ▸ API keys ▸
   **roll it immediately**, then check Workbench request logs.
