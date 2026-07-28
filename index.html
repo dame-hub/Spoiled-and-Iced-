@@ -5,13 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spoiled &amp; Iced — Vote the Drop</title>
   <meta name="description" content="A voting marketplace for iced-out 18k & 14k gold-plated jewelry. Vote the pieces you want dropped — or skip the wait and pre-order. Rings, earrings, necklaces & bracelets." />
-  <meta name="theme-color" content="#0C0D10" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBDBEC" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0C0D10" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Social share card. After you connect your domain on Vercel, swap
+       YOUR-DOMAIN below for the real one (e.g. spoiledandiced.com). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Spoiled &amp; Iced" />
+  <meta property="og:title" content="Spoiled &amp; Iced — Vote the Drop" />
+  <meta property="og:description" content="Vote the pieces you want dropped — or skip the wait and pre-order. Iced-out 18k &amp; 14k gold-plated jewelry, Hello Kitty &amp; Bape bags." />
+  <meta property="og:image" content="https://YOUR-DOMAIN/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Spoiled &amp; Iced — Vote the Drop" />
+  <meta name="twitter:description" content="Vote the pieces you want dropped — or skip the wait and pre-order." />
+  <meta name="twitter:image" content="https://YOUR-DOMAIN/og.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
 <script>try{var _t=localStorage.getItem('si_theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
+<noscript>
+  <style>#intro,#disclaimer{display:none!important}</style>
+  <div style="background:#E8579B;color:#fff;text-align:center;padding:12px 16px;font-family:sans-serif;font-size:14px">
+    Voting and pre-ordering need JavaScript — enable it to use the site. You can still browse below.
+  </div>
+</noscript>
 <style>
   /* ============================================================
      SPOILED & ICED — voting marketplace
@@ -959,7 +981,7 @@
   var CONFIG = {
     apiUrl: "/api/products",
     // Paste your deployed capture endpoint (Google Apps Script Web App URL — see
-    // api/capture.gs + README). Every vote, pre-order and purchase is POSTed here.
+    // apps-script/capture.gs + README). Every vote, pre-order and purchase is POSTed here.
     captureUrl: "",
     // Optional: your Stripe Payment Link for the Vendors List (Dashboard ▸ Payment
     // Links — see STRIPE.md). If set, "Get instant access" sends the buyer straight

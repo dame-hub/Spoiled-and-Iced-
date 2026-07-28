@@ -47,7 +47,7 @@ stats** to your Host Hub dashboard. No server to run, no monthly cost.
 
 ### 1. Deploy the backend
 1. Create a **Google Sheet** → **Extensions ▸ Apps Script**. Delete the sample and paste ALL
-   of [`api/capture.gs`](api/capture.gs).
+   of [`apps-script/capture.gs`](apps-script/capture.gs).
 2. Edit the three CONFIG values at the top:
    - `ADMIN_TOKEN` — your **Host Hub passcode** (make it long; this is what keeps your numbers private).
    - `OWNER_EMAIL` — where new-order alerts are sent.
@@ -218,7 +218,36 @@ now — we'll email you when it's ready," so it's honest either way.
 
 ## Deploy
 
-- **Any static host** (Netlify, Vercel, GitHub Pages, Cloudflare Pages): upload `index.html`.
+### Vercel (recommended — the repo is pre-configured)
+
+The repo deploys to Vercel with **zero build settings**:
+
+1. Go to <https://vercel.com/new> and **Import** this GitHub repository.
+2. Framework preset: **Other** · Build command: *(leave empty)* · Output directory: *(leave empty)*. Click **Deploy**.
+3. That's it. You get:
+   - `/` — the storefront (`index.html`)
+   - `/admin` — your private Host Hub (clean URL via `vercel.json`; kept out of
+     Google with `noindex` headers — still keep the URL + passcode to yourself)
+   - `/api/products` — the AliExpress feed as a serverless function (idles
+     harmlessly until you add the `ALIEXPRESS_*` env vars in Vercel ▸ Settings ▸
+     Environment Variables; the built-in catalog shows meanwhile)
+   - security headers, branded `404.html`, favicon/social card, `robots.txt`
+4. Vercel deploys your **default branch** to production and every push after
+   that automatically. Merge your working branch into the default branch (or
+   set the production branch in Vercel ▸ Settings ▸ Git) so production tracks
+   the code you mean to ship.
+5. After you connect a custom domain, replace the two `https://YOUR-DOMAIN/og.png`
+   placeholders in `index.html` with your real domain so shared links show the
+   pink logo card.
+
+> `apps-script/capture.gs` is **not** deployed to Vercel — it's the code you
+> paste into Google Apps Script (see the backend section above). Only
+> `api/products.js` runs on Vercel.
+
+### Other options
+
+- **Any static host** (Netlify, GitHub Pages, Cloudflare Pages): upload `index.html`
+  (plus `admin.html`, `404.html` and the icon files).
 - **Shopify:** create a page and paste the contents of the `<body>` into a *Custom Liquid*
   or *Custom HTML* section, or add it as a page template. Link to it from your nav as
   "Vote the Drop."

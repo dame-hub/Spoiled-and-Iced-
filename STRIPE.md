@@ -72,7 +72,7 @@ The Google Sheet that captures pre-orders can now send real Stripe invoices.
    properties** ▸ add:
    - Property: `STRIPE_KEY` · Value: `rk_...`
    The key lives only there — never in code, never in git.
-3. Re-paste the updated `api/capture.gs` (it adds the menu + invoice code),
+3. Re-paste the updated `apps-script/capture.gs` (it adds the menu + invoice code),
    save, and reload the Sheet. A **💎 Spoiled & Iced** menu appears.
 
 **Every drop**

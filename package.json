@@ -1,0 +1,7 @@
+{
+  "name": "spoiled-and-iced",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Spoiled & Iced — voting marketplace storefront (static site + one Vercel serverless function)",
+  "engines": { "node": ">=18" }
+}
