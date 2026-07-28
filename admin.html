@@ -100,6 +100,24 @@
   .num-cell{ font-family:var(--font-mono); text-align:right; color:var(--txt); font-variant-numeric:tabular-nums; }
   .empty{ color:var(--txt-mute); font-family:var(--font-mono); font-size:.82rem; padding:16px 0; }
   code.vid{ font-family:var(--font-mono); font-size:.76rem; color:var(--lilac); }
+
+  /* catalog manager */
+  .field select{ width:100%; background:var(--bg-0); border:1px solid var(--line-2); border-radius:11px; padding:13px 14px; color:var(--txt); font-family:var(--font-mono); font-size:15px; outline:none; }
+  .field select:focus{ border-color:var(--pink); }
+  .field input[type="file"]{ padding:10px; font-size:12px; }
+  .addgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:4px 14px; }
+  .np-prev{ width:80px; height:80px; object-fit:cover; border-radius:12px; border:1px solid var(--line-2); background:#fff; margin:2px 0 12px; }
+  .cat-thumb{ width:46px; height:46px; object-fit:cover; border-radius:9px; border:1px solid var(--line-2); background:#fff; display:block; }
+  .cat-thumb.none{ display:grid; place-items:center; font-size:20px; }
+  .cat-in{ background:var(--bg-0); border:1px solid var(--line-2); border-radius:9px; color:var(--txt); font-family:var(--font-mono); font-size:13px; padding:8px 9px; outline:none; }
+  .cat-in:focus{ border-color:var(--pink); }
+  input.cat-in.nm{ width:100%; min-width:180px; }
+  input.cat-in.n{ width:76px; text-align:right; }
+  select.cat-in{ min-width:132px; }
+  .rowbtns{ display:flex; gap:6px; white-space:nowrap; }
+  .btn.mini{ padding:7px 10px; font-size:.68rem; }
+  tr.hiddenrow td{ opacity:.42; }
+  tr.hiddenrow td .rowbtns{ opacity:1; }
 </style>
 
 <header>
@@ -133,6 +151,7 @@
 
   <div class="tabs" id="tabs">
     <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="catalog">Catalog</button>
     <button class="tab" data-tab="votes">Votes</button>
     <button class="tab" data-tab="preorders">Pre-orders</button>
     <button class="tab" data-tab="sales">Sales</button>
@@ -146,6 +165,37 @@
       <div class="panel"><h2>Votes by category</h2><div class="hint">Where the demand is</div><div id="catBreakdown"></div></div>
     </div>
     <div class="panel"><h2>Ring size demand</h2><div class="hint">Votes from the ring-size poll at the top of the site</div><div id="ringSizes"></div></div>
+  </div>
+
+  <!-- CATALOG -->
+  <div class="panelblock" id="pb-catalog">
+    <div class="panel">
+      <h2>Add a piece</h2>
+      <div class="hint">Upload a photo, set the price, and it's on the ballot. With your backend connected it goes live for <b>every visitor</b>; without it, it previews on this device only.</div>
+      <div class="addgrid">
+        <div class="field"><label for="npName">Name</label><input id="npName" type="text" placeholder="Iced Butterfly Ring" /></div>
+        <div class="field"><label for="npCat">Category</label><select id="npCat">
+          <option value="rings">Rings</option><option value="earrings">Earrings</option>
+          <option value="necklaces">Necklaces</option><option value="bracelets">Bracelets</option>
+          <option value="hellokitty">Hello Kitty Bags</option><option value="bape">Bape Bags</option>
+        </select></div>
+        <div class="field"><label for="npPrice">Price ($)</label><input id="npPrice" type="number" min="0" step="0.01" value="35" /></div>
+        <div class="field"><label for="npGoal">Vote goal</label><input id="npGoal" type="number" min="1" value="100" /></div>
+        <div class="field"><label for="npBadge">Badge</label><select id="npBadge">
+          <option value="">None</option><option value="hot">🔥 Hot</option><option value="new">New</option>
+        </select></div>
+        <div class="field"><label for="npPhoto">Photo</label><input id="npPhoto" type="file" accept="image/*" /></div>
+      </div>
+      <img id="npPrev" class="np-prev" alt="" style="display:none" />
+      <button class="btn btn--pink" id="npAdd">＋ Add to catalog</button>
+      <div class="hint" id="npMsg" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>Pieces</h2>
+      <div class="hint" id="catStatus">Edit the name or price and hit Save. Swap the photo with 📷, hide a piece from the site with 🙈, and delete pieces you added with ✕.</div>
+      <div class="searchbar"><input id="catFilter" type="search" placeholder="Filter pieces…" /></div>
+      <div class="tablewrap"><table><thead><tr><th></th><th>Piece</th><th>Category</th><th>Price $</th><th>Goal</th><th>Actions</th></tr></thead><tbody id="catRows"><tr><td colspan="6" class="empty">Loading catalog…</td></tr></tbody></table></div>
+    </div>
   </div>
 
   <!-- VOTES -->
@@ -171,6 +221,8 @@
       <div class="tablewrap"><table><thead><tr><th>When</th><th>Piece</th><th>Size</th><th>Qty</th><th>Email</th></tr></thead><tbody id="preTable"></tbody></table></div>
     </div>
   </div>
+
+  <input type="file" id="rowPhoto" accept="image/*" style="display:none" />
 
   <!-- SALES -->
   <div class="panelblock" id="pb-sales">
@@ -289,12 +341,226 @@
       salesList:[[now-1800000,"Deluxe Vendors List","reseller@email.com",120],[now-260000000,"Deluxe Vendors List","boutique@email.com",120]] };
   }
 
+  /* ============================================================
+     CATALOG MANAGER
+     Base pieces come from the storefront itself (hidden same-origin
+     iframe reads its built-in catalog). Your edits are overrides:
+     saved to the backend's "Catalog" sheet when connected (live for
+     every visitor) and always mirrored to this device's localStorage
+     (the storefront reads the same key, so local previews are instant).
+     ============================================================ */
+  var CAT_LS="si_catalog", CAT_BASE=null, CAT_OVR={}, catInit=false, rowPhotoId=null, newPhoto=null;
+
+  function backendReady(){ return !!(cfg&&cfg.endpoint&&cfg.token); }
+  function ovrList(){ return Object.keys(CAT_OVR).map(function(k){ return CAT_OVR[k]; }); }
+  function mirrorLocal(){ try{ localStorage.setItem(CAT_LS, JSON.stringify(ovrList())); }catch(e){} }
+  function catMsg(t){ $("catStatus").textContent=t; }
+
+  function postCatalog(payload){
+    if(!backendReady()) return Promise.resolve(false);
+    try{
+      return fetch(cfg.endpoint,{ method:"POST", mode:"no-cors", keepalive:true,
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body:JSON.stringify(Object.assign({ token:cfg.token }, payload)) })
+        .then(function(){ return true; })["catch"](function(){ return false; });
+    }catch(e){ return Promise.resolve(false); }
+  }
+
+  function loadOverrides(){
+    if(backendReady()){
+      return jsonp(cfg.endpoint,{action:"catalog"}).then(function(d){
+        CAT_OVR={};
+        ((d&&d.catalog)||[]).forEach(function(o){ if(o&&o.id) CAT_OVR[o.id]=o; });
+        mirrorLocal();
+      })["catch"](function(){ loadLocalOverrides(); });
+    }
+    loadLocalOverrides(); return Promise.resolve();
+  }
+  function loadLocalOverrides(){
+    CAT_OVR={};
+    try{ (JSON.parse(localStorage.getItem(CAT_LS)||"[]")||[]).forEach(function(o){ if(o&&o.id) CAT_OVR[o.id]=o; }); }catch(e){}
+  }
+
+  /* read the storefront's built-in catalog through a hidden iframe */
+  function loadBaseCatalog(){
+    return new Promise(function(res){
+      var fr=document.createElement("iframe");
+      fr.style.cssText="position:absolute;left:-9999px;width:2px;height:2px;opacity:0;pointer-events:none";
+      fr.src="index.html?hub=1";
+      var done=false;
+      function finish(){
+        if(done) return; done=true;
+        var cat=null; try{ cat=fr.contentWindow.SI_BASE_CATALOG||null; }catch(e){}
+        setTimeout(function(){ if(fr.parentNode) fr.remove(); },0);
+        res(cat);
+      }
+      var to=setTimeout(finish,15000);
+      fr.onload=function(){
+        var n=0, iv=setInterval(function(){
+          n++; var ok=false; try{ ok=!!fr.contentWindow.SI_BASE_CATALOG; }catch(e){}
+          if(ok||n>50){ clearInterval(iv); clearTimeout(to); finish(); }
+        },140);
+      };
+      fr.onerror=function(){ clearTimeout(to); finish(); };
+      document.body.appendChild(fr);
+    });
+  }
+
+  function initCatalog(){
+    if(catInit) return; catInit=true;
+    loadOverrides().then(renderCatalog);
+    loadBaseCatalog().then(function(list){
+      CAT_BASE=list||[];
+      if(!list) catMsg("Couldn't read the storefront's built-in pieces (open the Hub from your deployed site, not as a lone file). You can still add new pieces below.");
+      renderCatalog();
+    });
+  }
+
+  function effectiveCatalog(){
+    var out=[], seen={};
+    (CAT_BASE||[]).forEach(function(b){
+      var o=CAT_OVR[b.id]||{}; seen[b.id]=1;
+      out.push({ id:b.id, builtin:true, hidden:!!o.hidden,
+        name:(o.name!=null&&o.name!=="")?o.name:b.name,
+        cat:o.cat||b.cat,
+        price:(o.price!==""&&o.price!=null)?Number(o.price):Number(b.price),
+        goal:(o.goal&&Number(o.goal)>0)?Number(o.goal):b.goal,
+        image:o.image||b.image||"" });
+    });
+    Object.keys(CAT_OVR).forEach(function(id){
+      if(seen[id]) return; var o=CAT_OVR[id];
+      out.push({ id:id, builtin:false, hidden:!!o.hidden, name:o.name||"(unnamed)",
+        cat:o.cat||"rings", price:Number(o.price)||0, goal:Number(o.goal)||100, image:o.image||"" });
+    });
+    return out;
+  }
+
+  function renderCatalog(){
+    var q=($("catFilter").value||"").toLowerCase();
+    var rows=effectiveCatalog().filter(function(p){ return !q||p.name.toLowerCase().indexOf(q)>-1; });
+    if(!rows.length){
+      var emptyMsg = CAT_BASE===null ? "Loading catalog…" : (q ? "No pieces match." : "No pieces yet — add your first one above.");
+      $("catRows").innerHTML='<tr><td colspan="6" class="empty">'+emptyMsg+"</td></tr>"; return;
+    }
+    $("catRows").innerHTML=rows.map(function(p){
+      var thumb=p.image?'<img class="cat-thumb" src="'+esc(p.image)+'" alt="">':'<span class="cat-thumb none">💎</span>';
+      var catOpts=["rings","earrings","necklaces","bracelets","hellokitty","bape"].map(function(c){
+        return '<option value="'+c+'"'+(p.cat===c?" selected":"")+'>'+catLabel(c)+"</option>"; }).join("");
+      return '<tr data-id="'+esc(p.id)+'"'+(p.hidden?' class="hiddenrow"':'')+'>'+
+        "<td>"+thumb+"</td>"+
+        '<td><input class="cat-in nm" data-f="name" value="'+esc(p.name)+'"></td>'+
+        '<td><select class="cat-in" data-f="cat">'+catOpts+"</select></td>"+
+        '<td><input class="cat-in n" data-f="price" type="number" min="0" step="0.01" value="'+Number(p.price).toFixed(2)+'"></td>'+
+        '<td><input class="cat-in n" data-f="goal" type="number" min="1" step="1" value="'+(p.goal||100)+'"></td>'+
+        '<td><div class="rowbtns">'+
+          '<button class="btn mini" data-act="save" title="Save changes">💾 Save</button>'+
+          '<button class="btn mini" data-act="photo" title="Swap photo">📷</button>'+
+          '<button class="btn mini" data-act="hide" title="'+(p.hidden?"Show on the site":"Hide from the site")+'">'+(p.hidden?"👁 Show":"🙈 Hide")+"</button>"+
+          (p.builtin?"":'<button class="btn mini" data-act="del" title="Delete this added piece">✕</button>')+
+        "</div></td></tr>";
+    }).join("");
+  }
+
+  function saveOverride(id, patch, note){
+    var o=CAT_OVR[id]||{ id:String(id) };
+    Object.keys(patch).forEach(function(k){ o[k]=patch[k]; });
+    CAT_OVR[id]=o; mirrorLocal(); renderCatalog();
+    postCatalog(Object.assign({ type:"catalog_upsert" }, o)).then(function(sent){
+      catMsg((note||"Saved")+(sent?" — syncing live for every visitor.":" on this device. Connect your backend (URL + passcode) to push it live for everyone."));
+    });
+  }
+
+  $("catRows").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-act]"); if(!b) return;
+    var tr=b.closest("tr"), id=tr.getAttribute("data-id"), act=b.getAttribute("data-act");
+    if(act==="save"){
+      var patch={};
+      tr.querySelectorAll("[data-f]").forEach(function(inp){ patch[inp.getAttribute("data-f")]=inp.value; });
+      if(patch.price!==""&&(!isFinite(Number(patch.price))||Number(patch.price)<0)){ catMsg("Price needs to be a number."); return; }
+      saveOverride(id, patch, '"'+(patch.name||id)+'" saved');
+    } else if(act==="hide"){
+      var cur=CAT_OVR[id]&&CAT_OVR[id].hidden;
+      saveOverride(id,{ hidden:!cur }, !cur?"Hidden from the site":"Back on the site");
+    } else if(act==="photo"){
+      rowPhotoId=id; $("rowPhoto").click();
+    } else if(act==="del"){
+      if(!confirm("Delete this added piece? Visitors won't see it anymore.")) return;
+      delete CAT_OVR[id]; mirrorLocal(); renderCatalog();
+      postCatalog({ type:"catalog_delete", id:id }).then(function(sent){
+        catMsg("Deleted"+(sent?" — removed for every visitor.":" on this device. Connect your backend to remove it for everyone."));
+      });
+    }
+  });
+  $("catFilter").addEventListener("input",renderCatalog);
+
+  /* photo pipeline: downscale + compress to fit the backend's cell limit (~50k chars) */
+  function shrinkImage(file){
+    return new Promise(function(res,rej){
+      var img=new Image(), url=URL.createObjectURL(file);
+      img.onload=function(){
+        try{
+          var c=document.createElement("canvas");
+          var scale=Math.min(1,640/Math.max(img.width,img.height));
+          c.width=Math.max(1,Math.round(img.width*scale)); c.height=Math.max(1,Math.round(img.height*scale));
+          var ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+          ctx.drawImage(img,0,0,c.width,c.height);
+          var q=0.82, out=c.toDataURL("image/jpeg",q);
+          while(out.length>48000&&q>0.42){ q-=0.08; out=c.toDataURL("image/jpeg",q); }
+          while(out.length>48000&&c.width>140){
+            var c2=document.createElement("canvas");
+            c2.width=Math.round(c.width*0.78); c2.height=Math.round(c.height*0.78);
+            c2.getContext("2d").drawImage(c,0,0,c2.width,c2.height); c=c2;
+            out=c.toDataURL("image/jpeg",0.7);
+          }
+          URL.revokeObjectURL(url);
+          if(out.length>48000) rej(new Error("That photo is too complex — try a smaller or simpler one."));
+          else res(out);
+        }catch(err){ URL.revokeObjectURL(url); rej(err); }
+      };
+      img.onerror=function(){ URL.revokeObjectURL(url); rej(new Error("Couldn't read that image file.")); };
+      img.src=url;
+    });
+  }
+
+  $("rowPhoto").addEventListener("change",function(){
+    var f=this.files&&this.files[0]; this.value=""; if(!f||!rowPhotoId) return;
+    var id=rowPhotoId; rowPhotoId=null; catMsg("Compressing photo…");
+    shrinkImage(f).then(function(dataUri){ saveOverride(id,{ image:dataUri },"Photo updated"); })
+      ["catch"](function(err){ catMsg(String(err.message||err)); });
+  });
+
+  /* add a new piece */
+  $("npPhoto").addEventListener("change",function(){
+    var f=this.files&&this.files[0]; if(!f){ newPhoto=null; $("npPrev").style.display="none"; return; }
+    $("npMsg").textContent="Compressing photo…";
+    shrinkImage(f).then(function(dataUri){
+      newPhoto=dataUri; $("npPrev").src=dataUri; $("npPrev").style.display="block"; $("npMsg").textContent="Photo ready.";
+    })["catch"](function(err){ newPhoto=null; $("npPrev").style.display="none"; $("npMsg").textContent=String(err.message||err); });
+  });
+  $("npAdd").addEventListener("click",function(){
+    var name=$("npName").value.trim();
+    if(!name){ $("npMsg").textContent="Give the piece a name."; return; }
+    var price=Number($("npPrice").value);
+    if(!isFinite(price)||price<0){ $("npMsg").textContent="Price needs to be a number."; return; }
+    var id="c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    var o={ id:id, name:name, cat:$("npCat").value, price:price,
+            goal:Math.max(1,Math.round(Number($("npGoal").value)||100)),
+            badge:$("npBadge").value||"", hidden:false, image:newPhoto||"" };
+    CAT_OVR[id]=o; mirrorLocal(); renderCatalog();
+    postCatalog(Object.assign({ type:"catalog_upsert" }, o)).then(function(sent){
+      $("npMsg").textContent='"'+name+'" added'+(sent?" — live for every visitor.":" on this device. Connect your backend to push it live for everyone.");
+    });
+    $("npName").value=""; $("npPrice").value="35"; $("npGoal").value="100"; $("npBadge").value="";
+    $("npPhoto").value=""; newPhoto=null; $("npPrev").style.display="none";
+  });
+
   /* tabs */
   $("tabs").addEventListener("click",function(e){
     var b=e.target.closest(".tab"); if(!b) return;
     $("tabs").querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");}); b.classList.add("active");
     document.querySelectorAll(".panelblock").forEach(function(p){p.classList.remove("active");});
     $("pb-"+b.getAttribute("data-tab")).classList.add("active");
+    if(b.getAttribute("data-tab")==="catalog") initCatalog();
   });
 
   $("connect").addEventListener("click",function(){

@@ -38,6 +38,47 @@ function ensureSheet_() {
   return sh;
 }
 
+/* ---------- Catalog sheet: owner edits from the Host Hub ---------- */
+var CATALOG_SHEET = "Catalog";
+
+function ensureCatalog_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(CATALOG_SHEET) || ss.insertSheet(CATALOG_SHEET);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(["Updated", "ID", "Name", "Category", "Price", "Goal", "Badge", "Hidden", "Image"]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+/* Upsert one catalog override (called from the Host Hub, token-gated). */
+function catalogUpsert_(d) {
+  var sh = ensureCatalog_(), rows = sh.getDataRange().getValues(), rowIdx = -1;
+  for (var i = 1; i < rows.length; i++) if (String(rows[i][1]) === String(d.id)) { rowIdx = i + 1; break; }
+  var row = [new Date(), String(d.id), d.name || "", d.cat || "", (d.price === "" || d.price == null) ? "" : Number(d.price),
+             d.goal ? Number(d.goal) : "", d.badge || "", d.hidden ? "yes" : "", d.image || ""];
+  if (rowIdx > -1) sh.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+  else sh.appendRow(row);
+}
+
+function catalogDelete_(d) {
+  var sh = ensureCatalog_(), rows = sh.getDataRange().getValues();
+  for (var i = rows.length - 1; i >= 1; i--) if (String(rows[i][1]) === String(d.id)) sh.deleteRow(i + 1);
+}
+
+/* Public read — what the storefront applies on load. */
+function computeCatalog_() {
+  var rows = ensureCatalog_().getDataRange().getValues(), out = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[1]) continue;
+    out.push({ id: String(r[1]), name: r[2] || "", cat: r[3] || "",
+               price: (r[4] === "" ? "" : Number(r[4])), goal: r[5] ? Number(r[5]) : "",
+               badge: r[6] || "", hidden: r[7] === "yes", image: r[8] || "" });
+  }
+  return out;
+}
+
 /* ---------- POST: log an event, email on pre-order/purchase ---------- */
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -45,6 +86,13 @@ function doPost(e) {
   try {
     var data = {};
     try { data = JSON.parse(e.postData.contents); } catch (er) {}
+    /* Host Hub catalog edits — require the admin passcode, never logged as events */
+    if (data.type === "catalog_upsert" || data.type === "catalog_delete") {
+      if (data.token !== ADMIN_TOKEN) return json_({ error: "unauthorized" });
+      if (!data.id) return json_({ error: "missing id" });
+      if (data.type === "catalog_upsert") catalogUpsert_(data); else catalogDelete_(data);
+      return json_({ ok: true });
+    }
     ensureSheet_().appendRow([
       new Date(), data.type || "", data.name || data.product || "", data.cat || "",
       data.price || "", (data.voted === true ? "yes" : (data.voted === false ? "removed" : "")),
@@ -63,6 +111,7 @@ function doPost(e) {
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === "counts") return reply_({ counts: computeCounts_() }, p.callback);   // public, safe
+  if (p.action === "catalog") return reply_({ catalog: computeCatalog_() }, p.callback); // public, safe
   if (p.action === "stats") {
     if (p.token !== ADMIN_TOKEN) return reply_({ error: "unauthorized" }, p.callback);
     return reply_(computeStats_(), p.callback);

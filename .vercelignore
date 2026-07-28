@@ -1,0 +1,6 @@
+# Deploy only the site itself — keep docs & backend source off the public host
+README.md
+STRIPE.md
+apps-script/
+.gitignore
+package.json

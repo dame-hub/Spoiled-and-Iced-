@@ -5,9 +5,11 @@ gold-plated jewelry (rings, earrings, necklaces, bracelets) and **vote** on what
 stocked. The most-wanted pieces hit their vote goal, "unlock the drop," and are the ones you
 add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
 
-The catalog ships with **20 real products** — names, prices, ratings, "sold" counts and photos
-extracted from the Alex Handwork Store jewelry catalog. Styled in a light bubblegum-pink theme that matches the Spoiled & Iced
-Shopify storefront (pale pink background, dark-plum text, pink accents).
+The catalog ships with **67 real pieces** — names and photos extracted from the Spoiled &amp;
+Iced source catalogs, all priced at a flat **$35**. Styled in a light bubblegum-pink theme
+that matches the Spoiled & Iced Shopify storefront (pale pink background, dark-plum text,
+pink accents). Prices, photos and pieces are all editable live from the Host Hub's
+**Catalog** tab — no code needed.
 
 It's a single, self-contained `index.html` — no build step, no dependencies (the logo is
 embedded inline). Open it, host it, or drop it into Shopify.
@@ -22,7 +24,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Light / dark theme toggle** in the header — visitors pick the bubblegum-light look (default, matches the store) or the dark liquid-chrome look; their choice is remembered.
 - **Hero collage of real products** (photos pulled from the live catalog, not emoji, with a couple of bags featured).
 - **Ring-size poll** pinned to the very top of the site: visitors tap their size (5–10, half sizes included) so you stock the sizes people actually wear. One vote per device (change it anytime), a live bar + count on each size, a crown on the most-wanted size, and it feeds the Host Hub's **Ring Size Demand** panel.
-- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, price (with original-price strikethrough) and a votes-to-unlock meter — no review clutter under the product.
+- **Storefront catalog** with category filters (All, Rings, Earrings, Necklaces, Bracelets, Hello Kitty Bags, Bape Bags) plus search and sort. Cards show real photos, the price and a votes-to-unlock meter — no review clutter under the product.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
@@ -68,9 +70,10 @@ functions.
 Open **`admin.html`** (host it alongside `index.html`, e.g. `yourstore.com/admin.html`, or just
 open the file). Enter your `/exec` URL and your `ADMIN_TOKEN` passcode once — it's saved to your
 device. It's organised into tabs:
-- **Overview** — unique visitors, total votes, pre-orders, pre-order value, sales, revenue, top pieces, and votes-by-category.
+- **Overview** — unique visitors, total votes, pre-orders, pre-order value, sales, revenue, top pieces, votes-by-category, and ring-size demand.
+- **Catalog** — the live product manager: edit prices/names, swap photos, hide pieces, add new ones (see "Manage the catalog" below).
 - **Votes** — **every piece with its live vote count** (searchable), plus a **who-voted-&-when log** (each vote event by anonymous per-device ID).
-- **Pre-orders** — every reservation with piece, qty and email.
+- **Pre-orders** — every reservation with piece, ring size, qty and email.
 - **Sales** — every Deluxe Vendors List order.
 
 Click **Preview with sample data** first to see it before connecting. Votes are funneled into
@@ -117,87 +120,36 @@ Everything is data-driven. Open `index.html` and edit the arrays near the top of
 ### Products (the ballot)
 ```js
 { id: "r1", name: "Iced Butterfly Ring", cat: "rings",
-  price: 24.00, base: 82, goal: 100, badge: "hot", icon: "🦋",
-  src: SOURCES.jewelry }
+  price: 35, base: 82, goal: 100, badge: "hot", icon: "🦋",
+  image: "data:image/webp;base64,…" }
 ```
 - `base` — starting vote count. `goal` — votes needed to unlock the drop.
 - `badge` — `"hot"`, `"new"`, or `null`.
-- `icon` — the emoji shown on the tile.
-- **Real photos:** add `image: "https://…your-photo.jpg"` to any product and it renders
-  the photo instead of the emoji tile.
-- `src` — the vendor product link (see below).
-
-### Vendor sources
-The two partner storefronts are in `SOURCES`:
-```js
-var SOURCES = {
-  jewelry: "https://a.aliexpress.com/_msqbsqx",
-  bags:    "https://a.aliexpress.com/_mtEMOIF"
-};
-```
-Paste an **exact product URL** into a product's `src` to make its "View source ↗" link
-deep-link straight to that item.
+- `icon` — the emoji shown when a product has no photo.
+- Every piece ships at a flat **$35** — change any price live from the Host Hub
+  (below), no code needed.
 
 ### Categories
 Add or rename categories in the `CATS` object (label, chip emoji, and the two-color tile gradient).
 
-## Connect the AliExpress API (automatic products + photos)
+## Manage the catalog from the Host Hub (no code)
 
-Instead of hand-entering pieces, the site can pull **real products, prices, and photos**
-straight from AliExpress via their official Affiliate API. Because every API request must be
-signed with your secret key (which can't live in a webpage), this runs through a tiny
-backend — `api/products.js` — that you deploy once. The storefront then loads live products
-on page load, and falls back to the demo catalog whenever the backend isn't reachable.
+The Host Hub's **Catalog** tab is a live product manager:
 
-### 1. Get API access
-- Sign up on the **AliExpress Open Platform / Affiliate portal** (`portals.aliexpress.com`
-  for affiliates, or `openservice.aliexpress.com` for the open platform) and create an app.
-- After approval you'll have an **App Key**, an **App Secret**, and a **Tracking ID**.
+- **Edit** any piece's name, category, price or vote goal, then hit **Save**.
+- **📷 Swap the photo** — pick any image; it's compressed in the browser
+  automatically to fit the backend.
+- **🙈 Hide / 👁 Show** — pull a built-in piece off the ballot (and bring it back)
+  without deleting anything.
+- **＋ Add a piece** — name, category, price, goal, badge and photo; it appears on
+  the ballot like any other piece.
 
-### 2. Choose your pieces
-Open `products.config.json` and list the **numeric product IDs** you want on the ballot —
-the number in a product URL, e.g. `.../item/`**`1005006123456789`**`.html`. From your two
-vendor links, open each piece and grab that number. Use `overrides` to set each item's
-category and drop goal (category matters most for the bags — the code can't tell Hello Kitty
-from Bape on its own):
-```json
-{
-  "productIds": ["1005006123456789", "1005006987654321"],
-  "defaultGoal": 100,
-  "overrides": {
-    "1005006123456789": { "cat": "hellokitty", "goal": 120, "badge": "hot" },
-    "1005006987654321": { "cat": "bape" }
-  }
-}
-```
-
-### 3. Deploy the backend
-Push this repo to **Vercel** (easiest — it auto-detects the `api/` folder), or Netlify /
-Cloudflare (Node 18+). Set these environment variables in the host's dashboard:
-
-| Variable | Value |
-|---|---|
-| `ALIEXPRESS_APP_KEY` | your App Key |
-| `ALIEXPRESS_APP_SECRET` | your App Secret |
-| `ALIEXPRESS_TRACKING_ID` | your Tracking ID |
-| `ALIEXPRESS_SIGN_METHOD` | `sha256` (default) — flip to `md5` only if you get a sign error |
-| `ALIEXPRESS_PRODUCT_IDS` | *(optional)* comma-separated IDs, overrides the config file |
-
-Visit `https://your-app.vercel.app/api/products` — you should see JSON of your products.
-Add `?debug=1` to see the raw AliExpress response, which is handy if signing needs a tweak.
-
-### 4. Point the storefront at it
-In `index.html`, the `CONFIG.apiUrl` near the top of the script decides where products come
-from:
-- Same domain as the backend → leave it as `"/api/products"`.
-- Storefront on **Shopify**, backend on Vercel → set it to the full URL,
-  `"https://your-app.vercel.app/api/products"` (CORS is already enabled in the backend).
-- Set it to `""` to force the built-in demo catalog.
-
-> **Heads up on signing:** AliExpress provisions apps against two API gateways with slightly
-> different signature rules. The backend defaults to the newer HMAC-SHA256 method; if the API
-> returns a sign/auth error, switch `ALIEXPRESS_SIGN_METHOD` to `md5`. Once you have real
-> credentials we can confirm the right setting together against the live `?debug=1` output.
+How it syncs: edits are saved as **overrides** in a `Catalog` sheet next to your
+captures (token-gated writes — only the Host Hub passcode can change them). The
+storefront fetches the overrides on every load, so **every visitor** sees your
+changes. Until the backend is connected, edits are kept on your device only (the
+storefront on the same device previews them instantly) — the Hub tells you which
+mode you're in after every save.
 
 ## Votes &amp; pre-orders: device vs. shared
 
@@ -228,9 +180,6 @@ The repo deploys to Vercel with **zero build settings**:
    - `/` — the storefront (`index.html`)
    - `/admin` — your private Host Hub (clean URL via `vercel.json`; kept out of
      Google with `noindex` headers — still keep the URL + passcode to yourself)
-   - `/api/products` — the AliExpress feed as a serverless function (idles
-     harmlessly until you add the `ALIEXPRESS_*` env vars in Vercel ▸ Settings ▸
-     Environment Variables; the built-in catalog shows meanwhile)
    - security headers, branded `404.html`, favicon/social card, `robots.txt`
 4. Vercel deploys your **default branch** to production and every push after
    that automatically. Merge your working branch into the default branch (or
@@ -240,9 +189,10 @@ The repo deploys to Vercel with **zero build settings**:
    placeholders in `index.html` with your real domain so shared links show the
    pink logo card.
 
-> `apps-script/capture.gs` is **not** deployed to Vercel — it's the code you
-> paste into Google Apps Script (see the backend section above). Only
-> `api/products.js` runs on Vercel.
+> Docs and backend source (`README.md`, `STRIPE.md`, `apps-script/`) are kept
+> off the public host by `.vercelignore` — only the site itself deploys.
+> `apps-script/capture.gs` is the code you paste into Google Apps Script (see
+> the backend section above).
 
 ### Other options
 
