@@ -221,8 +221,8 @@
   <div class="panelblock" id="pb-preorders">
     <div class="panel">
       <h2>Pre-orders</h2>
-      <div class="hint">Reserved pieces — email each customer when their piece is ready.</div>
-      <div class="tablewrap"><table><thead><tr><th>When</th><th>Piece</th><th>Size</th><th>Qty</th><th>Email</th></tr></thead><tbody id="preTable"></tbody></table></div>
+      <div class="hint">Reserved pieces — each one is auto-invoiced (7 days to pay) and ships to the address below.</div>
+      <div class="tablewrap"><table><thead><tr><th>When</th><th>Piece</th><th>Size</th><th>Qty</th><th>Email</th><th>Ship to</th></tr></thead><tbody id="preTable"></tbody></table></div>
     </div>
   </div>
 
@@ -301,8 +301,8 @@
 
     var pre=d.preList||[];
     $("preTable").innerHTML=pre.length?pre.map(function(r){
-      return "<tr><td>"+when(r[0])+"</td><td><b>"+esc(r[1])+"</b></td><td>"+esc(r[4]||"—")+"</td><td>"+esc(r[2])+"</td><td>"+esc(r[3])+"</td></tr>";
-    }).join(""):'<tr><td colspan="5" class="empty">No pre-orders yet.</td></tr>';
+      return "<tr><td>"+when(r[0])+"</td><td><b>"+esc(r[1])+"</b></td><td>"+esc(r[4]||"—")+"</td><td>"+esc(r[2])+"</td><td>"+esc(r[3])+"</td><td>"+esc(r[5]||"—")+"</td></tr>";
+    }).join(""):'<tr><td colspan="6" class="empty">No pre-orders yet.</td></tr>';
 
     var sales=d.salesList||[];
     $("salesTable").innerHTML=sales.length?sales.map(function(r){
@@ -341,7 +341,7 @@
     return { generated:new Date().toISOString(), uniqueVisitors:1284, totalVisits:3106, totalVotes:1094,
       preorders:38, preRevenue:1512.40, purchases:6, purRevenue:720, revenue:2232.40,
       pieces:pieces, cats:cats, ringSizes:ringSizes, voteLog:vlog,
-      preList:[[now,"Hello Kitty 20mm Ring",1,"jenna@email.com","7"],[now-3600000,"Hello Kitty Shoulder Bag",2,"mia@email.com",""],[now-90000000,"Rolex-style band Ring",1,"drew@email.com","6.5"]],
+      preList:[[now,"Hello Kitty 20mm Ring",1,"jenna@email.com","7","Jenna R, 402 Peach St, Atlanta, GA 30301"],[now-3600000,"Hello Kitty Shoulder Bag",2,"mia@email.com","","Mia L, 88 Ocean Dr, Miami, FL 33101"],[now-90000000,"Rolex-style band Ring",1,"drew@email.com","6.5","Drew P, 12 Vine Ave, Los Angeles, CA 90001"]],
       salesList:[[now-1800000,"Deluxe Vendors List","reseller@email.com",120],[now-260000000,"Deluxe Vendors List","boutique@email.com",120]] };
   }
 

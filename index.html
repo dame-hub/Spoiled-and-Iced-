@@ -535,6 +535,8 @@
   .po-select:focus{ border-color:var(--pink); }
   .po-hint{ font-family:var(--font-mono); font-size:.66rem; color:var(--txt-mute); margin-top:6px; }
   .po-buy{ display:block; text-align:center; text-decoration:none; margin:2px 0 4px; }
+  .po-row{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; }
+  @media (max-width:420px){ .po-row{ grid-template-columns:1.4fr 1fr 1fr; gap:8px; } }
   .po-or{ font-family:var(--font-mono); font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; color:var(--txt-mute); text-align:center; margin:8px 0 12px; }
   .po-wait{ font-size:.8rem; color:var(--txt-dim); }
   .field .err{ color:var(--magenta); font-size:.78rem; margin-top:6px; display:none; }
@@ -1360,7 +1362,18 @@
       '<div class="field" id="emailField"><label for="poEmail">Email — we\'ll ping you the second it drops</label>' +
         '<input type="email" id="poEmail" placeholder="you@email.com" autocomplete="email" />' +
         '<div class="err">Enter a valid email so we can reach you.</div></div>' +
-      '<p class="note">Reserving sends an <b>invoice to your email</b> — you\'ll have <b>up to 7 days</b> to pay it and your piece is locked in the moment it\'s paid.</p>' +
+      '<div class="field" id="nameField"><label for="poName">Full name</label>' +
+        '<input type="text" id="poName" placeholder="Jane Doe" autocomplete="name" />' +
+        '<div class="err">Enter your name for shipping.</div></div>' +
+      '<div class="field" id="addrField"><label for="poAddr">Shipping address</label>' +
+        '<input type="text" id="poAddr" placeholder="Street address, apt / unit" autocomplete="street-address" />' +
+        '<div class="err">Enter your street address.</div></div>' +
+      '<div class="po-row">' +
+        '<div class="field" id="cityField"><label for="poCity">City</label><input type="text" id="poCity" autocomplete="address-level2" /><div class="err">City?</div></div>' +
+        '<div class="field" id="stateField"><label for="poState">State</label><input type="text" id="poState" autocomplete="address-level1" maxlength="20" /><div class="err">State?</div></div>' +
+        '<div class="field" id="zipField"><label for="poZip">ZIP</label><input type="text" id="poZip" inputmode="numeric" autocomplete="postal-code" maxlength="12" /><div class="err">ZIP?</div></div>' +
+      "</div>" +
+      '<p class="note">Reserving sends an <b>invoice to your email</b> — you\'ll have <b>up to 7 days</b> to pay it and your piece is locked in the moment it\'s paid. Your piece ships to the address above once it lands.</p>' +
       '<p class="note po-wait">⏳ Heads up: popular sizes and high-demand pieces can take a little longer to arrive.</p>' +
       '<button class="btn btn--acid" id="poSubmit">Reserve &amp; send my invoice ⚡</button>';
 
@@ -1372,7 +1385,11 @@
     byId("qMinus").addEventListener("click", function () { q.value = Math.max(1, (parseInt(q.value, 10) || 1) - 1); });
     byId("qPlus").addEventListener("click", function () { q.value = Math.min(99, (parseInt(q.value, 10) || 1) + 1); });
     var emailEl = byId("poEmail");
-    emailEl.addEventListener("input", function () { byId("emailField").classList.remove("invalid"); });
+    ["emailField", "nameField", "addrField", "cityField", "stateField", "zipField"].forEach(function (fid) {
+      var f = byId(fid); if (!f) return;
+      var inp = f.querySelector("input");
+      if (inp) inp.addEventListener("input", function () { f.classList.remove("invalid"); });
+    });
     setTimeout(function () { emailEl.focus(); }, 60);
     byId("poSubmit").addEventListener("click", function () { submitPreorder(p, q, emailEl); });
     emailEl.addEventListener("keydown", function (e) { if (e.key === "Enter") submitPreorder(p, q, emailEl); });
@@ -1381,20 +1398,32 @@
   function submitPreorder(p, q, emailEl) {
     var email = (emailEl.value || "").trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { byId("emailField").classList.add("invalid"); emailEl.focus(); return; }
+    /* shipping address — required so the invoice + shipment are ready to go */
+    var ship = {
+      name: (byId("poName").value || "").trim(),
+      addr: (byId("poAddr").value || "").trim(),
+      city: (byId("poCity").value || "").trim(),
+      state: (byId("poState").value || "").trim(),
+      zip: (byId("poZip").value || "").trim()
+    };
+    var missing = null;
+    [["name", "nameField"], ["addr", "addrField"], ["city", "cityField"], ["state", "stateField"], ["zip", "zipField"]].forEach(function (pair) {
+      if (!ship[pair[0]]) { byId(pair[1]).classList.add("invalid"); if (!missing) missing = pair[1]; }
+    });
+    if (missing) { var mi = byId(missing).querySelector("input"); if (mi) mi.focus(); return; }
     var qty = Math.max(1, Math.min(99, parseInt(q.value, 10) || 1));
     var se = byId("poSize"); var size = se ? se.value : null;
 
-    /* ---- HOOK: send to Shopify checkout / your backend / email here ---- */
-    reservations.push({ id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email, at: Date.now() });
+    reservations.push({ id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email, ship: ship, at: Date.now() });
     save(LS_PRE, reservations);
-    capture("preorder", { id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email });
+    capture("preorder", { id: p.id, name: p.name, cat: p.cat, price: p.price, qty: qty, size: size, email: email, ship: ship });
     updatePills();
 
     modalEyebrow.textContent = "You're in line"; modalTitle.textContent = "Reserved";
     modalBody.innerHTML =
       '<div class="po-success"><div class="big">⚡</div>' +
       '<h3>You skipped the wait</h3>' +
-      '<p>' + esc(p.name) + ' ×' + qty + (size ? ' · size ' + esc(size) : '') + ' is reserved. Your <b>invoice</b> is headed to <b>' + esc(email) + '</b> — you\'ll have <b>up to 7 days</b> to pay it. Popular sizes and high-demand pieces can take a little longer to arrive.</p>' +
+      '<p>' + esc(p.name) + ' ×' + qty + (size ? ' · size ' + esc(size) : '') + ' is reserved for <b>' + esc(ship.name) + '</b> and ships to <b>' + esc(ship.city) + ', ' + esc(ship.state) + '</b>. Your <b>invoice</b> is headed to <b>' + esc(email) + '</b> — you\'ll have <b>up to 7 days</b> to pay it. Popular sizes and high-demand pieces can take a little longer to arrive.</p>' +
       '<button class="btn btn--acid" id="poDone">Keep voting →</button></div>';
     byId("poDone").addEventListener("click", closeModal);
     confetti();
@@ -1410,7 +1439,7 @@
     var rows = reservations.map(function (r, i) {
       var cat = CATS[r.cat] || { emoji: "✨", glow: "#8892a5", label: r.cat };
       return '<div class="res-row"><div class="thumb" style="background:radial-gradient(120% 120% at 50% 0%,' + cat.glow + '44,transparent),var(--bg-0)">' + cat.emoji + "</div>" +
-        '<div class="meta"><h4>' + esc(r.name) + " ×" + r.qty + "</h4><small>" + esc(cat.label) + (r.size ? " · size " + esc(r.size) : "") + " · $" + Number(r.price).toFixed(2) + "</small></div>" +
+        '<div class="meta"><h4>' + esc(r.name) + " ×" + r.qty + "</h4><small>" + esc(cat.label) + (r.size ? " · size " + esc(r.size) : "") + " · $" + Number(r.price).toFixed(2) + (r.ship && r.ship.city ? " · ships to " + esc(r.ship.city) + ", " + esc(r.ship.state) : "") + "</small></div>" +
         '<button class="rm" data-i="' + i + '">Remove</button></div>';
     }).join("");
     modalBody.innerHTML = '<div class="res-list">' + rows + "</div>" +

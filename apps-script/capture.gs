@@ -32,7 +32,7 @@ function ensureSheet_() {
   if (sh.getLastRow() === 0) {
     sh.appendRow(["Received", "Type", "Piece / Product", "Category",
                   "Price", "Voted", "Vote count", "Qty", "Email", "Voter ID", "Raw JSON",
-                  "Stripe invoice"]);
+                  "Stripe invoice", "Ship to"]);
     sh.setFrozenRows(1);
   }
   return sh;
@@ -99,11 +99,17 @@ function doPost(e) {
       return json_(generatePayLinks_(data.items || []));
     }
     var sh = ensureSheet_();
+    var shipStr = "";
+    if (data.ship && data.ship.addr) {
+      shipStr = [data.ship.name, data.ship.addr, data.ship.city,
+                 ((data.ship.state || "") + " " + (data.ship.zip || "")).trim()]
+                .filter(Boolean).join(", ");
+    }
     sh.appendRow([
       new Date(), data.type || "", data.name || data.product || "", data.cat || "",
       data.price || "", (data.voted === true ? "yes" : (data.voted === false ? "removed" : "")),
       (data.count != null ? data.count : ""), data.qty || "", data.email || "",
-      data.vid || "", JSON.stringify(data)
+      data.vid || "", JSON.stringify(data), "", shipStr
     ]);
     var rowIdx = sh.getLastRow();
     if (data.email) {
@@ -170,7 +176,7 @@ function computeStats_() {
     else if (type === "preorder") {
       preorders++; preRev += price * qty;
       var psize = ""; try { psize = (JSON.parse(r[10]) || {}).size || ""; } catch (er) {}
-      preList.push([r[0], name, qty, email, psize]);
+      preList.push([r[0], name, qty, email, psize, r[12] || ""]);
     }
     else if (type === "purchase") { purchases++; purRev += price * qty; salesList.push([r[0], name, email, price]); }
   }
@@ -203,6 +209,10 @@ function sendPreorderEmail_(d, inv) {
     htmlBody: emailShell_("Your pre-order is reserved 🩷",
       "<p style='margin:0 0 14px'>Thanks for reserving a piece on <b>" + STORE_NAME + "</b>" + escHtml_(sizeLine) + " — you skipped the line and you're first up when it drops.</p>" +
       orderBox_(d.name, d.qty || 1, d.price) +
+      (d.ship && d.ship.addr
+        ? "<p style='margin:14px 0 0;color:#9a7;font-size:13px'><b>Ships to:</b> " +
+          escHtml_([d.ship.name, d.ship.addr, d.ship.city, ((d.ship.state || "") + " " + (d.ship.zip || "")).trim()].filter(function (x) { return x; }).join(", ")) + "</p>"
+        : "") +
       "<p style='margin:16px 0 0'>&nbsp;</p>" + invoiceCopy +
       "<p style='margin:12px 0 0;color:#b8a;font-size:13px'>⏳ Popular sizes and high-demand pieces can take a little longer to arrive — we'll keep you posted. Just reply anytime.</p>") });
 }
@@ -268,13 +278,13 @@ function sendStripeInvoiceForSelectedRow() {
   if (sh.getName() !== SHEET) { ui.alert("Open the '" + SHEET + "' sheet and select a pre-order row first."); return; }
   var row = sh.getActiveRange().getRow();
   if (row < 2) { ui.alert("Select a pre-order row (not the header)."); return; }
-  var r = sh.getRange(row, 1, 1, 12).getValues()[0];
+  var r = sh.getRange(row, 1, 1, 13).getValues()[0];
   if (r[1] !== "preorder") { ui.alert("That row is a \"" + r[1] + "\" — pick a pre-order row."); return; }
   if (!r[8]) { ui.alert("This row has no customer email."); return; }
   if (r[11]) { ui.alert("Already invoiced (" + r[11] + "). Clear the 'Stripe invoice' cell to re-send."); return; }
   var name = r[2] || "Pre-ordered piece", price = Number(r[4]) || 0,
-      qty = Number(r[7]) || 1, email = r[8], size = "";
-  try { size = (JSON.parse(r[10]) || {}).size || ""; } catch (e) {}
+      qty = Number(r[7]) || 1, email = r[8], size = "", ship = null;
+  try { var raw = JSON.parse(r[10]) || {}; size = raw.size || ""; ship = raw.ship || null; } catch (e) {}
   if (!price) { ui.alert("This row has no price — fill in the Price column first."); return; }
 
   var label = name + " ×" + qty + (size ? " · ring size " + size : "");
@@ -286,7 +296,7 @@ function sendStripeInvoiceForSelectedRow() {
   if (tax === ui.Button.CANCEL || tax === ui.Button.CLOSE) return;
 
   try {
-    var invoice = createAndSendInvoice_(name, price, qty, size, email, tax === ui.Button.YES);
+    var invoice = createAndSendInvoice_(name, price, qty, size, email, tax === ui.Button.YES, ship);
     sh.getRange(row, 12).setValue(invoice.id);
     ui.alert("Invoice sent ✅", email + " just got a Stripe email with a hosted \"Pay this invoice\" page.\nInvoice: " + invoice.id, ui.ButtonSet.OK);
   } catch (err) {
@@ -299,11 +309,28 @@ function sendStripeInvoiceForSelectedRow() {
 }
 
 /* Create + send a 7-day Stripe invoice. Used by the automatic pre-order flow
-   and the manual Sheet menu. Returns the invoice object. */
-function createAndSendInvoice_(name, price, qty, size, email, withTax) {
+   and the manual Sheet menu. Returns the invoice object.
+   `ship` (optional) = {name,addr,city,state,zip} — saved onto the Stripe
+   customer so the invoice shows the shipping address and tax CAN be
+   calculated once you enable it. */
+function createAndSendInvoice_(name, price, qty, size, email, withTax, ship) {
   var label = name + " ×" + qty + (size ? " · ring size " + size : "");
   var found = stripe_("get", "/v1/customers?email=" + encodeURIComponent(email) + "&limit=1");
   var customer = (found.data && found.data[0]) || stripe_("post", "/v1/customers", { email: email });
+  if (ship && ship.addr) {
+    try {
+      stripe_("post", "/v1/customers/" + customer.id, {
+        name: ship.name || "",
+        "address[line1]": ship.addr, "address[city]": ship.city || "",
+        "address[state]": ship.state || "", "address[postal_code]": ship.zip || "",
+        "address[country]": "US",
+        "shipping[name]": ship.name || email,
+        "shipping[address][line1]": ship.addr, "shipping[address][city]": ship.city || "",
+        "shipping[address][state]": ship.state || "", "shipping[address][postal_code]": ship.zip || "",
+        "shipping[address][country]": "US"
+      });
+    } catch (er) {} // address save is best-effort — never block the invoice
+  }
   var params = {
     customer: customer.id,
     collection_method: "send_invoice",   // hosted pay page — no card data touches us
@@ -322,12 +349,23 @@ function createAndSendInvoice_(name, price, qty, size, email, withTax) {
   return invoice;
 }
 
-/* Automatic pre-order invoicing (no tax by default — an emailed invoice can't
-   calculate tax without the customer's saved address; see STRIPE.md). */
+/* Automatic pre-order invoicing. The customer's shipping address (collected
+   in the pre-order form) is saved to Stripe, so automatic tax becomes
+   possible: set Script property AUTO_TAX = "yes" once your Stripe Tax
+   registration is active. If a taxed invoice fails (bad address, no
+   registration), we retry without tax so the customer always gets billed. */
 function autoInvoicePreorder_(d) {
-  if (!PropertiesService.getScriptProperties().getProperty("STRIPE_KEY")) return null;
+  var props = PropertiesService.getScriptProperties();
+  if (!props.getProperty("STRIPE_KEY")) return null;
   if (!d.email || !d.price) return null;
-  return createAndSendInvoice_(d.name || "Pre-ordered piece", d.price, d.qty || 1, d.size || "", d.email, false);
+  var name = d.name || "Pre-ordered piece", ship = d.ship || null;
+  var wantTax = props.getProperty("AUTO_TAX") === "yes" && !!(ship && ship.addr);
+  try {
+    return createAndSendInvoice_(name, d.price, d.qty || 1, d.size || "", d.email, wantTax, ship);
+  } catch (err) {
+    if (wantTax) return createAndSendInvoice_(name, d.price, d.qty || 1, d.size || "", d.email, false, ship);
+    throw err;
+  }
 }
 
 /* ================== STRIPE PAYMENT LINKS (per product) ==================
@@ -377,7 +415,12 @@ function generatePayLinks_(items) {
         "line_items[0][price]": price.id, "line_items[0][quantity]": "1",
         "line_items[0][adjustable_quantity][enabled]": "true",
         "line_items[0][adjustable_quantity][minimum]": "1",
-        "line_items[0][adjustable_quantity][maximum]": "10"
+        "line_items[0][adjustable_quantity][maximum]": "10",
+        /* collect the shipping address at checkout so a direct "Buy now"
+           gives you everything you need to ship — same data the pre-order
+           form captures. */
+        "shipping_address_collection[allowed_countries][0]": "US",
+        "metadata[piece_id]": String(it.id)
       });
       var row = [new Date(), String(it.id), it.name, Number(it.price), price.id, link.url];
       if (ex) sh.getRange(ex.row, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
