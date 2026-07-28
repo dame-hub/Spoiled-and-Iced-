@@ -193,7 +193,11 @@
     <div class="panel">
       <h2>Pieces</h2>
       <div class="hint" id="catStatus">Edit the name or price and hit Save. Swap the photo with 📷, hide a piece from the site with 🙈, and delete pieces you added with ✕.</div>
-      <div class="searchbar"><input id="catFilter" type="search" placeholder="Filter pieces…" /></div>
+      <div class="searchbar">
+        <input id="catFilter" type="search" placeholder="Filter pieces…" />
+        <button class="btn" id="genLinks" title="Create a Stripe payment link for every visible piece">🔗 Generate Stripe payment links</button>
+      </div>
+      <div class="hint" id="linkStatus"></div>
       <div class="tablewrap"><table><thead><tr><th></th><th>Piece</th><th>Category</th><th>Price $</th><th>Goal</th><th>Actions</th></tr></thead><tbody id="catRows"><tr><td colspan="6" class="empty">Loading catalog…</td></tr></tbody></table></div>
     </div>
   </div>
@@ -414,7 +418,43 @@
       if(!list) catMsg("Couldn't read the storefront's built-in pieces (open the Hub from your deployed site, not as a lone file). You can still add new pieces below.");
       renderCatalog();
     });
+    loadPayLinks();
   }
+
+  /* ---- Stripe payment links ---- */
+  var PAYL={};
+  function loadPayLinks(){
+    if(!backendReady()) return Promise.resolve();
+    return jsonp(cfg.endpoint,{action:"paylinks"}).then(function(d){
+      PAYL=(d&&d.links)||{}; renderCatalog(); updateLinkStatus();
+    })["catch"](function(){});
+  }
+  function updateLinkStatus(){
+    var all=effectiveCatalog().filter(function(p){return !p.hidden;});
+    var linked=all.filter(function(p){return PAYL[p.id];}).length;
+    $("linkStatus").textContent = all.length
+      ? "Stripe payment links: "+linked+" of "+all.length+" pieces linked."+(linked<all.length?" Hit 🔗 Generate to create the missing ones.":" ✅ every piece has a link.")
+      : "";
+  }
+  $("genLinks").addEventListener("click",function(){
+    if(!backendReady()){ $("linkStatus").textContent="Connect your backend (URL + passcode) first — links are created through your Apps Script with your own Stripe key."; return; }
+    var items=effectiveCatalog().filter(function(p){ return !p.hidden && Number(p.price)>0; })
+      .map(function(p){ return { id:p.id, name:p.name, price:Number(p.price) }; });
+    if(!items.length){ $("linkStatus").textContent="No pieces to link yet."; return; }
+    $("genLinks").disabled=true;
+    $("linkStatus").textContent="Creating links for "+items.length+" pieces via your Stripe account… this can take a few minutes. (Needs STRIPE_KEY in Apps Script with Products + Payment Links write.)";
+    postCatalog({ type:"stripe_links_generate", items:items });
+    var polls=0, iv=setInterval(function(){
+      polls++;
+      loadPayLinks().then(function(){
+        var all=effectiveCatalog().filter(function(p){return !p.hidden;});
+        var linked=all.filter(function(p){return PAYL[p.id];}).length;
+        if(linked>=all.length||polls>40){ clearInterval(iv); $("genLinks").disabled=false;
+          if(linked<all.length) $("linkStatus").textContent="Stripe links: "+linked+" of "+all.length+" done — if it stalls, check STRIPE_KEY permissions (Products + Payment Links write) and hit Generate again.";
+        }
+      });
+    },6000);
+  });
 
   function effectiveCatalog(){
     var out=[], seen={};
@@ -440,7 +480,9 @@
     var rows=effectiveCatalog().filter(function(p){ return !q||p.name.toLowerCase().indexOf(q)>-1; });
     if(!rows.length){
       var emptyMsg = CAT_BASE===null ? "Loading catalog…" : (q ? "No pieces match." : "No pieces yet — add your first one above.");
-      $("catRows").innerHTML='<tr><td colspan="6" class="empty">'+emptyMsg+"</td></tr>"; return;
+      $("catRows").innerHTML='<tr><td colspan="6" class="empty">'+emptyMsg+"</td></tr>";
+      try{ updateLinkStatus(); }catch(e){}
+      return;
     }
     $("catRows").innerHTML=rows.map(function(p){
       var thumb=p.image?'<img class="cat-thumb" src="'+esc(p.image)+'" alt="">':'<span class="cat-thumb none">💎</span>';
@@ -457,8 +499,10 @@
           '<button class="btn mini" data-act="photo" title="Swap photo">📷</button>'+
           '<button class="btn mini" data-act="hide" title="'+(p.hidden?"Show on the site":"Hide from the site")+'">'+(p.hidden?"👁 Show":"🙈 Hide")+"</button>"+
           (p.builtin?"":'<button class="btn mini" data-act="del" title="Delete this added piece">✕</button>')+
+          (PAYL[p.id]?'<a class="btn mini" href="'+esc(PAYL[p.id])+'" target="_blank" rel="noopener" title="Open this piece\'s Stripe payment link">🔗</a>':'')+
         "</div></td></tr>";
     }).join("");
+    try{ updateLinkStatus(); }catch(e){}
   }
 
   function saveOverride(id, patch, note){

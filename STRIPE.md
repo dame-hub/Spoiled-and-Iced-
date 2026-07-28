@@ -6,9 +6,10 @@ already wired.
 
 | Flow on the site | Stripe product | What you set up |
 | --- | --- | --- |
+| Every catalog piece | **Payments** (Payment Links) | One click in the Host Hub generates a link per piece; "Buy now" appears on the site |
 | Deluxe Vendors List ($120 digital) | **Payments** (Payment Link) | A no-code checkout link pasted into `index.html` |
-| Pre-orders ("no charge now") | **Invoicing** | A one-click menu inside your Google Sheet |
-| Sales tax on both | **Tax** | Activate Stripe Tax + add your registration(s) |
+| Pre-orders | **Invoicing** (automatic) | Every pre-order auto-sends a Stripe invoice — customer has up to 7 days to pay |
+| Sales tax | **Tax** | Activate Stripe Tax + add your registration(s) |
 
 > **Test first.** Do the whole setup in a Stripe **sandbox** (test mode) and pay
 > yourself with card `4242 4242 4242 4242`. Flip to live keys/links only when
@@ -57,15 +58,26 @@ Stripe Tax **calculates and collects**; it doesn't file returns for you
 unless you add a filing product. Reports for remitting: Dashboard ▸ Tax ▸
 Reports.
 
-## 3. Invoicing — bill pre-orders when the drop lands
+## 3. Invoicing — every pre-order is billed automatically
 
-The Google Sheet that captures pre-orders can now send real Stripe invoices.
+The moment a visitor pre-orders, the backend **automatically creates and sends
+a Stripe invoice** (up to 7 days to pay, ring size on the line item, invoice ID
+written into the sheet row). The confirmation email tells them the invoice is
+coming. If `STRIPE_KEY` isn't set yet, pre-orders still log and email — you
+just invoice manually later with the Sheet menu below.
+
+> Automatic invoices are sent **without automatic tax**: an emailed invoice
+> can't calculate tax from an email address alone (no customer address). To
+> collect tax on an invoice, add the customer's address in Stripe first and
+> use the manual menu with "Yes" to tax — or build tax into your prices.
 
 **One-time setup**
 
 1. **Dashboard ▸ Developers ▸ API keys ▸ Create restricted key** — permissions:
    - Customers: **Write**
    - Invoices: **Write**
+   - Products: **Write** *(for the per-piece payment links)*
+   - Payment Links: **Write** *(same)*
    - everything else: None
    Use this `rk_...` key, **never** your `sk_...` secret key.
 2. Google Sheet ▸ Extensions ▸ Apps Script ▸ ⚙ **Project Settings ▸ Script
@@ -75,7 +87,7 @@ The Google Sheet that captures pre-orders can now send real Stripe invoices.
 3. Re-paste the updated `apps-script/capture.gs` (it adds the menu + invoice code),
    save, and reload the Sheet. A **💎 Spoiled & Iced** menu appears.
 
-**Every drop**
+**Manual fallback / re-send** (same Sheet menu as before)
 
 1. Open the `Captures` sheet, click any **preorder** row.
 2. Menu ▸ **Send Stripe invoice for selected row**.
@@ -88,6 +100,22 @@ The Google Sheet that captures pre-orders can now send real Stripe invoices.
    date; card/wallet options picked automatically). The invoice ID lands in
    the row's **Stripe invoice** column so you never double-bill.
 5. Ring pre-orders automatically include the **ring size** on the invoice line.
+
+## 4. Payment links for every piece (the "Buy now" buttons)
+
+1. Make sure `STRIPE_KEY` (above) also has **Products: Write** and
+   **Payment Links: Write**.
+2. Host Hub ▸ **Catalog** tab ▸ **🔗 Generate Stripe payment links**. The
+   backend creates a Stripe Price + Payment Link for every visible piece
+   ($35 jewelry / $65 bags) and stores them in a `PayLinks` sheet. The button
+   shows progress ("X of Y linked") and is safe to re-run — it only creates
+   what's missing or re-links pieces whose price changed.
+3. The storefront picks the links up automatically: every piece's pre-order
+   modal gets a **💳 Buy now — secure card checkout** button (quantity
+   adjustable at checkout, 1–10).
+4. **Test vs live:** links are created in whatever mode your `STRIPE_KEY`
+   belongs to. Test-mode links (from a sandbox key) can't take real money —
+   regenerate with a live key before launch.
 
 ## Security rules this setup follows
 

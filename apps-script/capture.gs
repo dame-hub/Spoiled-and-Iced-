@@ -19,7 +19,7 @@
 
 /* ======================= CONFIG — EDIT THESE ======================= */
 var ADMIN_TOKEN = "change-me-to-a-long-secret";     // Host Hub passcode
-var OWNER_EMAIL = "avotransportationllc@gmail.com";  // new-order alerts
+var OWNER_EMAIL = "you@example.com";                 // new-order alerts — set to YOUR email
 var STORE_NAME  = "Spoiled & Iced";
 var STORE_URL   = "https://spoiled-iced-store.myshopify.com/";
 /* =================================================================== */
@@ -93,14 +93,29 @@ function doPost(e) {
       if (data.type === "catalog_upsert") catalogUpsert_(data); else catalogDelete_(data);
       return json_({ ok: true });
     }
-    ensureSheet_().appendRow([
+    /* Host Hub: generate Stripe payment links for the whole catalog */
+    if (data.type === "stripe_links_generate") {
+      if (data.token !== ADMIN_TOKEN) return json_({ error: "unauthorized" });
+      return json_(generatePayLinks_(data.items || []));
+    }
+    var sh = ensureSheet_();
+    sh.appendRow([
       new Date(), data.type || "", data.name || data.product || "", data.cat || "",
       data.price || "", (data.voted === true ? "yes" : (data.voted === false ? "removed" : "")),
       (data.count != null ? data.count : ""), data.qty || "", data.email || "",
       data.vid || "", JSON.stringify(data)
     ]);
+    var rowIdx = sh.getLastRow();
     if (data.email) {
-      if (data.type === "preorder") { sendPreorderEmail_(data); notifyOwner_("New pre-order", data); }
+      if (data.type === "preorder") {
+        /* AUTO-INVOICE: if a STRIPE_KEY is configured, every pre-order
+           automatically gets a Stripe invoice (7 days to pay) — no manual step. */
+        var inv = null;
+        try { inv = autoInvoicePreorder_(data); } catch (er) {}
+        if (inv && inv.id) sh.getRange(rowIdx, 12).setValue(inv.id);
+        sendPreorderEmail_(data, inv);
+        notifyOwner_("New pre-order" + (inv ? " · invoiced " + inv.id : " · NOT auto-invoiced"), data);
+      }
       else if (data.type === "purchase") { sendPurchaseEmail_(data); notifyOwner_("New Vendors List order", data); }
     }
     return json_({ ok: true });
@@ -112,6 +127,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === "counts") return reply_({ counts: computeCounts_() }, p.callback);   // public, safe
   if (p.action === "catalog") return reply_({ catalog: computeCatalog_() }, p.callback); // public, safe
+  if (p.action === "paylinks") return reply_({ links: computePayLinks_() }, p.callback); // public, safe (buy.stripe.com URLs)
   if (p.action === "stats") {
     if (p.token !== ADMIN_TOKEN) return reply_({ error: "unauthorized" }, p.callback);
     return reply_(computeStats_(), p.callback);
@@ -178,12 +194,17 @@ function computeStats_() {
 function round2_(n) { return Math.round(n * 100) / 100; }
 
 /* ---------- emails ---------- */
-function sendPreorderEmail_(d) {
+function sendPreorderEmail_(d, inv) {
+  var sizeLine = d.size ? " · ring size " + d.size : "";
+  var invoiceCopy = inv
+    ? "<p style='margin:0;color:#9a7;font-size:14px'>Your <b>Stripe invoice</b> is on its way in a separate email — you have <b>up to 7 days</b> to pay it, and your piece locks in the moment it's paid.</p>"
+    : "<p style='margin:0;color:#9a7;font-size:14px'>Watch your inbox for your <b>invoice</b> — you'll have <b>up to 7 days</b> to pay it, and your piece locks in the moment it's paid.</p>";
   MailApp.sendEmail({ to: d.email, name: STORE_NAME, subject: STORE_NAME + " — your pre-order is reserved 🩷",
     htmlBody: emailShell_("Your pre-order is reserved 🩷",
-      "<p style='margin:0 0 14px'>Thanks for reserving a piece on <b>" + STORE_NAME + "</b> — you skipped the line and you're first up when it drops.</p>" +
+      "<p style='margin:0 0 14px'>Thanks for reserving a piece on <b>" + STORE_NAME + "</b>" + escHtml_(sizeLine) + " — you skipped the line and you're first up when it drops.</p>" +
       orderBox_(d.name, d.qty || 1, d.price) +
-      "<p style='margin:16px 0 0;color:#8a6' >&nbsp;</p><p style='margin:0;color:#9a7;font-size:14px'>There's <b>no charge yet</b>. We'll email you to complete checkout the moment it's ready. Just reply anytime.</p>") });
+      "<p style='margin:16px 0 0'>&nbsp;</p>" + invoiceCopy +
+      "<p style='margin:12px 0 0;color:#b8a;font-size:13px'>⏳ Popular sizes and high-demand pieces can take a little longer to arrive — we'll keep you posted. Just reply anytime.</p>") });
 }
 function sendPurchaseEmail_(d) {
   MailApp.sendEmail({ to: d.email, name: STORE_NAME, subject: STORE_NAME + " — your Vendors List order",
@@ -265,22 +286,7 @@ function sendStripeInvoiceForSelectedRow() {
   if (tax === ui.Button.CANCEL || tax === ui.Button.CLOSE) return;
 
   try {
-    var found = stripe_("get", "/v1/customers?email=" + encodeURIComponent(email) + "&limit=1");
-    var customer = (found.data && found.data[0]) || stripe_("post", "/v1/customers", { email: email });
-    var params = {
-      customer: customer.id,
-      collection_method: "send_invoice",   // emails a hosted pay page — no card data touches us
-      days_until_due: "7",
-      auto_advance: "false",
-      description: "Your " + STORE_NAME + " pre-order is ready 🩷"
-    };
-    if (tax === ui.Button.YES) params["automatic_tax[enabled]"] = "true";
-    var invoice = stripe_("post", "/v1/invoices", params);
-    stripe_("post", "/v1/invoiceitems", {
-      customer: customer.id, invoice: invoice.id, currency: "usd",
-      amount: String(Math.round(price * 100) * qty), description: label
-    });
-    stripe_("post", "/v1/invoices/" + invoice.id + "/send", {});
+    var invoice = createAndSendInvoice_(name, price, qty, size, email, tax === ui.Button.YES);
     sh.getRange(row, 12).setValue(invoice.id);
     ui.alert("Invoice sent ✅", email + " just got a Stripe email with a hosted \"Pay this invoice\" page.\nInvoice: " + invoice.id, ui.ButtonSet.OK);
   } catch (err) {
@@ -290,6 +296,95 @@ function sendStripeInvoiceForSelectedRow() {
              "), or re-run and answer \"No\" to automatic tax.";
     ui.alert("Stripe error", msg, ui.ButtonSet.OK);
   }
+}
+
+/* Create + send a 7-day Stripe invoice. Used by the automatic pre-order flow
+   and the manual Sheet menu. Returns the invoice object. */
+function createAndSendInvoice_(name, price, qty, size, email, withTax) {
+  var label = name + " ×" + qty + (size ? " · ring size " + size : "");
+  var found = stripe_("get", "/v1/customers?email=" + encodeURIComponent(email) + "&limit=1");
+  var customer = (found.data && found.data[0]) || stripe_("post", "/v1/customers", { email: email });
+  var params = {
+    customer: customer.id,
+    collection_method: "send_invoice",   // hosted pay page — no card data touches us
+    days_until_due: "7",
+    auto_advance: "false",
+    description: "Your " + STORE_NAME + " pre-order — you have up to 7 days to pay. " +
+                 "Popular sizes and high-demand pieces can take a little longer to arrive."
+  };
+  if (withTax) params["automatic_tax[enabled]"] = "true";
+  var invoice = stripe_("post", "/v1/invoices", params);
+  stripe_("post", "/v1/invoiceitems", {
+    customer: customer.id, invoice: invoice.id, currency: "usd",
+    amount: String(Math.round(Number(price) * 100) * (Number(qty) || 1)), description: label
+  });
+  stripe_("post", "/v1/invoices/" + invoice.id + "/send", {});
+  return invoice;
+}
+
+/* Automatic pre-order invoicing (no tax by default — an emailed invoice can't
+   calculate tax without the customer's saved address; see STRIPE.md). */
+function autoInvoicePreorder_(d) {
+  if (!PropertiesService.getScriptProperties().getProperty("STRIPE_KEY")) return null;
+  if (!d.email || !d.price) return null;
+  return createAndSendInvoice_(d.name || "Pre-ordered piece", d.price, d.qty || 1, d.size || "", d.email, false);
+}
+
+/* ================== STRIPE PAYMENT LINKS (per product) ==================
+ * The Host Hub ▸ Catalog tab sends the whole catalog here (token-gated).
+ * For each piece we create a Price + Payment Link once (re-running skips
+ * pieces already linked at the same price, so it's safe to run again —
+ * including to finish a partial run). The storefront reads the public
+ * map via ?action=paylinks and shows "Buy now" on each piece.
+ * Requires STRIPE_KEY to ALSO have: Products = Write, Payment Links = Write.
+ */
+var PAYLINKS_SHEET = "PayLinks";
+
+function ensurePayLinks_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(PAYLINKS_SHEET) || ss.insertSheet(PAYLINKS_SHEET);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(["Updated", "ID", "Name", "Price", "Stripe price", "Payment link"]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function computePayLinks_() {
+  var rows = ensurePayLinks_().getDataRange().getValues(), links = {};
+  for (var i = 1; i < rows.length; i++) if (rows[i][1] && rows[i][5]) links[String(rows[i][1])] = String(rows[i][5]);
+  return links;
+}
+
+function generatePayLinks_(items) {
+  var sh = ensurePayLinks_(), rows = sh.getDataRange().getValues();
+  var existing = {}; // id -> {row, price}
+  for (var i = 1; i < rows.length; i++) if (rows[i][1]) existing[String(rows[i][1])] = { row: i + 1, price: Number(rows[i][3]) };
+  var started = Date.now(), created = 0, skipped = 0, errors = [];
+  for (var j = 0; j < items.length; j++) {
+    var it = items[j] || {};
+    if (!it.id || !it.name || !(Number(it.price) > 0)) { skipped++; continue; }
+    var ex = existing[String(it.id)];
+    if (ex && ex.price === Number(it.price)) { skipped++; continue; }   // already linked at this price
+    if (Date.now() - started > 270000) return { partial: true, created: created, skipped: skipped, errors: errors,
+      note: "Time limit — run Generate again to finish the rest." };
+    try {
+      var price = stripe_("post", "/v1/prices", {
+        unit_amount: String(Math.round(Number(it.price) * 100)), currency: "usd",
+        "product_data[name]": String(it.name).slice(0, 250)
+      });
+      var link = stripe_("post", "/v1/payment_links", {
+        "line_items[0][price]": price.id, "line_items[0][quantity]": "1",
+        "line_items[0][adjustable_quantity][enabled]": "true",
+        "line_items[0][adjustable_quantity][minimum]": "1",
+        "line_items[0][adjustable_quantity][maximum]": "10"
+      });
+      var row = [new Date(), String(it.id), it.name, Number(it.price), price.id, link.url];
+      if (ex) sh.getRange(ex.row, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
+      created++;
+    } catch (err) { errors.push(String(it.id) + ": " + String((err && err.message) || err)); }
+  }
+  return { ok: true, created: created, skipped: skipped, errors: errors };
 }
 
 /* Minimal Stripe REST helper (form-encoded, restricted key from Script properties). */

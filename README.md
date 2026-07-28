@@ -5,8 +5,8 @@ gold-plated jewelry (rings, earrings, necklaces, bracelets) and **vote** on what
 stocked. The most-wanted pieces hit their vote goal, "unlock the drop," and are the ones you
 add to your [Spoiled &amp; Iced Shopify store](https://spoiled-iced-store.myshopify.com/).
 
-The catalog ships with **67 real pieces** — names and photos extracted from the Spoiled &amp;
-Iced source catalogs, all priced at a flat **$35**. Styled in a light bubblegum-pink theme
+The catalog ships with **73 real pieces** — names and photos extracted from the Spoiled &amp;
+Iced source catalogs. Jewelry is **$35**, bags are **$65**. Styled in a light bubblegum-pink theme
 that matches the Spoiled & Iced Shopify storefront (pale pink background, dark-plum text,
 pink accents). Prices, photos and pieces are all editable live from the Host Hub's
 **Catalog** tab — no code needed.
@@ -28,7 +28,10 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **Vote on any piece**. Votes toggle on/off, one per piece per device.
 - **"Votes to unlock the drop"** progress bar on every card — hit the goal and it unlocks (with confetti).
 - **Pre-order / "Skip the wait"** on every piece: a visitor who doesn't want to wait for the
-  drop reserves it (quantity + email) — no charge now, they're first in line when it lands.
+  drop reserves it (quantity + email) and **automatically receives a Stripe invoice with up
+  to 7 days to pay** (when the backend + Stripe key are connected). The modal notes that
+  popular sizes and high-demand pieces can take longer to arrive. Pieces with a generated
+  Stripe payment link also show a **💳 Buy now** checkout button.
   Ring pre-orders add a **ring-size picker** (pre-filled from the visitor's size-poll pick),
   and the chosen size flows into the reservation, the confirmation email and the Host Hub.
   A **Reserved** counter in the header opens their list of pre-orders.
@@ -38,7 +41,7 @@ embedded inline). Open it, host it, or drop it into Shopify.
 - **The Deluxe Vendors List** — a dedicated section selling one digital product ($120, was $250): 15+ vetted vendors low→high tier + a reseller PDF guide, with its own checkout flow.
 - **Vote/pre-order/purchase capture** — every action is POSTed to your endpoint so you can see what's winning (see below).
 - **Optimized for iPhone / mobile**: single-column catalog, a big unmistakable **Vote** button (with a "Skip the wait" pre-order beneath it), a "How to vote" guide bar, large tap targets, and iOS-safe inputs/insets.
-- 67 real products (original catalog photos): jewelry (incl. 35 Hello Kitty Barbie ring variants) plus Hello Kitty & Bape bags.
+- 73 real products (original catalog photos): jewelry (incl. 35 Hello Kitty Barbie ring variants and 7 individual 14k Gold Filled Nugget ring styles) plus Hello Kitty & Bape bags. Jewelry $35 · bags $65.
 - Fully responsive, light bubblegum-pink theme (matches the Shopify storefront), respects reduced-motion preferences.
 
 ## Backend, auto-emails &amp; your private Host Hub (5-minute setup)
@@ -126,7 +129,7 @@ Everything is data-driven. Open `index.html` and edit the arrays near the top of
 - `base` — starting vote count. `goal` — votes needed to unlock the drop.
 - `badge` — `"hot"`, `"new"`, or `null`.
 - `icon` — the emoji shown when a product has no photo.
-- Every piece ships at a flat **$35** — change any price live from the Host Hub
+- Jewelry ships at **$35**, bags at **$65** — change any price live from the Host Hub
   (below), no code needed.
 
 ### Categories
